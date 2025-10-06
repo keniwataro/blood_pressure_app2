@@ -1,0 +1,78 @@
+ja:
+  activerecord:
+    models:
+      user: "ユーザー"
+      blood_pressure_record: "血圧記録"
+      hospital: "病院"
+    attributes:
+      user:
+        name: "名前"
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
+        current_password: "現在のパスワード"
+        remember_me: "ログイン状態を記憶する"
+      blood_pressure_record:
+        systolic_pressure: "最高血圧"
+        diastolic_pressure: "最低血圧"
+        pulse_rate: "脈拍数"
+        measured_at: "測定日時"
+        memo: "メモ"
+      hospital:
+        name: "病院名"
+        address: "住所"
+        phone_number: "電話番号"
+        website: "ウェブサイト"
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              blank: "を入力してください"
+              invalid: "の形式が正しくありません"
+              taken: "は既に使用されています"
+            password:
+              blank: "を入力してください"
+              too_short: "は%{count}文字以上で入力してください"
+              confirmation: "が一致しません"
+            name:
+              blank: "を入力してください"
+        blood_pressure_record:
+          attributes:
+            systolic_pressure:
+              blank: "を入力してください"
+              greater_than: "は%{count}より大きい値にしてください"
+              less_than: "は%{count}より小さい値にしてください"
+            diastolic_pressure:
+              blank: "を入力してください"
+              greater_than: "は%{count}より大きい値にしてください"  
+              less_than: "は%{count}より小さい値にしてください"
+            pulse_rate:
+              blank: "を入力してください"
+              greater_than: "は%{count}より大きい値にしてください"
+              less_than: "は%{count}より小さい値にしてください"
+            measured_at:
+              blank: "を入力してください"
+        hospital:
+          attributes:
+            name:
+              blank: "を入力してください"
+            address:
+              blank: "を入力してください"
+            phone_number:
+              invalid: "は有効な電話番号を入力してください"
+            website:
+              invalid: "は有効なURLを入力してください"
+  
+  # カスタムメッセージ
+  flash:
+    blood_pressure_records:
+      created: "血圧記録が正常に作成されました。"
+      updated: "血圧記録が正常に更新されました。"
+      destroyed: "血圧記録が削除されました。"
+    hospitals:
+      created: "病院情報が正常に作成されました。"
+      updated: "病院情報が正常に更新されました。"
+      destroyed: "病院情報が削除されました。"
+    profiles:
+      updated: "プロフィールが正常に更新されました。"

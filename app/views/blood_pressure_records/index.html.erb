@@ -1,0 +1,76 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2">血圧記録</h1>
+  <%= link_to "新しい記録を追加", new_blood_pressure_record_path, class: "btn btn-primary" %>
+</div>
+
+<!-- 血圧記録テーブル -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">最近の記録</h5>
+    <%= link_to "グラフ表示", charts_path, class: "btn btn-success btn-sm" %>
+  </div>
+  <div class="card-body">
+    <% if @blood_pressure_records.any? %>
+      <div class="d-md-none alert alert-info py-2 px-3 mb-2" style="font-size: 0.8rem;">
+        <i class="bi bi-arrow-left-right"></i> 横にスクロールして全ての情報を確認できます
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>測定日時</th>
+              <th>最高血圧</th>
+              <th>最低血圧</th>
+              <th>脈拍</th>
+              <th>分類</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_records.each do |record| %>
+              <tr>
+                <td><%= record.measured_at.strftime("%Y/%m/%d %H:%M") %></td>
+                <td>
+                  <span class="<%= record.systolic_pressure >= 140 ? 'blood-pressure-high' : 'blood-pressure-normal' %>">
+                    <%= record.systolic_pressure %> mmHg
+                  </span>
+                </td>
+                <td>
+                  <span class="<%= record.diastolic_pressure >= 90 ? 'blood-pressure-high' : 'blood-pressure-normal' %>">
+                    <%= record.diastolic_pressure %> mmHg
+                  </span>
+                </td>
+                <td><%= record.pulse_rate %> bpm</td>
+                <td>
+                  <span class="badge bg-<%= case record.blood_pressure_category
+                                            when '正常血圧' then 'success'
+                                            when '正常高値血圧' then 'info'
+                                            when '軽症高血圧（Ⅰ度）' then 'warning'
+                                            else 'danger'
+                                            end %>">
+                    <%= record.blood_pressure_category %>
+                  </span>
+                </td>
+                <td>
+                  <%= link_to "詳細", record, class: "btn btn-sm btn-info" %>
+                  <%= link_to "編集", edit_blood_pressure_record_path(record), class: "btn btn-sm btn-warning" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <% if @blood_pressure_records.count > 10 %>
+        <div class="text-center mt-3">
+          <p class="text-muted">最新の10件を表示しています。</p>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">まだ血圧記録がありません。</p>
+        <%= link_to "初回記録を追加", new_blood_pressure_record_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

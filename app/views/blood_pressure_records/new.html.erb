@@ -1,0 +1,65 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">新しい血圧記録</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @blood_pressure_record, local: true do |f| %>
+          <% if @blood_pressure_record.errors.any? %>
+            <div class="alert alert-danger">
+              <h6>エラーが発生しました:</h6>
+              <ul class="mb-0">
+                <% @blood_pressure_record.errors.each do |error| %>
+                  <li><%= error.full_message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :measured_at, "測定日時", class: "form-label" %>
+            <%= f.datetime_local_field :measured_at, class: "form-control", step: 60, 
+                                       data: { 
+                                         controller: "datetime-input",
+                                         action: "change->datetime-input#formatDateTime"
+                                       } %>
+            <div class="form-text">分単位で入力してください（秒は自動で0秒に設定されます）</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= f.label :systolic_pressure, "最高血圧 (mmHg)", class: "form-label" %>
+                <%= f.number_field :systolic_pressure, class: "form-control", placeholder: "例: 120" %>
+                <div class="form-text">上の血圧</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <%= f.label :diastolic_pressure, "最低血圧 (mmHg)", class: "form-label" %>
+                <%= f.number_field :diastolic_pressure, class: "form-control", placeholder: "例: 80" %>
+                <div class="form-text">下の血圧</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :pulse_rate, "脈拍数 (bpm)", class: "form-label" %>
+            <%= f.number_field :pulse_rate, class: "form-control", placeholder: "例: 70" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :memo, "メモ", class: "form-label" %>
+            <%= f.text_area :memo, class: "form-control", rows: 3, placeholder: "体調や運動後など、気になることがあれば記録してください" %>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <%= link_to "キャンセル", blood_pressure_records_path, class: "btn btn-secondary" %>
+            <%= f.submit "記録を保存", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

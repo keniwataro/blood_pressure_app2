@@ -1,0 +1,68 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2">病院・診療所一覧</h1>
+  <%= link_to "新しい病院を追加", new_hospital_path, class: "btn btn-primary" %>
+</div>
+
+<!-- 検索フォーム -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= form_with url: hospitals_path, method: :get, local: true do |f| %>
+      <div class="row g-2">
+        <div class="col-12 col-md-9">
+          <%= f.text_field :search, value: params[:search], placeholder: "病院名で検索", class: "form-control" %>
+        </div>
+        <div class="col-12 col-md-3">
+          <%= f.submit "検索", class: "btn btn-primary w-100" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- 病院一覧 -->
+<div class="row">
+  <% if @hospitals.any? %>
+    <% @hospitals.each do |hospital| %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title"><%= hospital.name %></h5>
+            <p class="card-text">
+              <strong>住所:</strong><br>
+              <%= hospital.address %>
+            </p>
+            <% if hospital.phone_number.present? %>
+              <p class="card-text">
+                <strong>電話:</strong> <%= hospital.phone_number %>
+              </p>
+            <% end %>
+            <% if hospital.website.present? %>
+              <p class="card-text">
+                <strong>ウェブサイト:</strong><br>
+                <%= link_to hospital.website, hospital.website, target: "_blank", class: "text-decoration-none" %>
+              </p>
+            <% end %>
+          </div>
+          <div class="card-footer bg-transparent">
+            <div class="d-flex gap-2" role="group">
+              <%= link_to "詳細", hospital, class: "btn btn-info btn-sm flex-fill" %>
+              <%= link_to "編集", edit_hospital_path(hospital), class: "btn btn-warning btn-sm flex-fill" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="text-center py-5">
+        <% if params[:search].present? %>
+          <p class="text-muted mb-3">「<%= params[:search] %>」に該当する病院が見つかりませんでした。</p>
+          <%= link_to "すべての病院を表示", hospitals_path, class: "btn btn-secondary" %>
+        <% else %>
+          <p class="text-muted mb-3">まだ病院が登録されていません。</p>
+          <%= link_to "最初の病院を登録", new_hospital_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
