@@ -24,7 +24,7 @@
           
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-              <% if current_user.medical_staff? %>
+              <% if current_user.current_role_medical_staff? %>
                 <!-- 医療従事者用メニュー -->
                 <li class="nav-item">
                   <%= link_to "ダッシュボード", medical_staff_root_path, class: "nav-link" %>
@@ -56,16 +56,20 @@
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <%= current_user.name || current_user.email %>
-                  <% if current_user.medical_staff? %>
-                    <span class="badge bg-success ms-1">医療従事者</span>
+                  <% if current_user.current_role.present? %>
+                    <% if current_user.current_role_medical_staff? %>
+                      <span class="badge bg-success ms-1"><%= current_user.current_role.name %></span>
+                    <% else %>
+                      <span class="badge bg-info ms-1"><%= current_user.current_role.name %></span>
+                    <% end %>
                   <% end %>
                 </a>
                 <ul class="dropdown-menu">
                   <li><%= link_to "プロフィール", profile_path, class: "dropdown-item" %></li>
                   <li><hr class="dropdown-divider"></li>
-                  <% if current_user.medical_staff? && current_user.patient? %>
+                  <% if current_user.has_multiple_roles? %>
                     <li>
-                      <%= link_to "患者画面に切り替え", blood_pressure_records_path, class: "dropdown-item" %>
+                      <%= link_to "役割を切り替え", root_path, class: "dropdown-item" %>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                   <% end %>

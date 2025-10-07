@@ -1,0 +1,97 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">スタッフ情報更新確認</h1>
+
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h4 class="mb-0">以下の内容で更新します。よろしいですか？</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @staff_member, url: medical_staff_staff_path(@staff_member), method: :patch, local: true) do |f| %>
+          <!-- 入力値を hidden フィールドで保持 -->
+          <%= f.hidden_field :name %>
+          <%= f.hidden_field :email %>
+          <%= hidden_field_tag 'user[permission_level]', @permission_level %>
+          
+          <% @selected_role_ids.each do |role_id| %>
+            <%= hidden_field_tag 'role_ids[]', role_id %>
+          <% end %>
+
+          <div class="mb-3">
+            <strong class="text-muted">ユーザーID</strong>
+            <p class="h5 text-primary"><%= @staff_member.user_id %></p>
+            <div class="form-text">ユーザーIDは変更できません</div>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">スタッフ名</strong>
+            <p class="h5"><%= @staff_member.name %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">メールアドレス</strong>
+            <p class="h5"><%= @staff_member.email %></p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <strong class="text-muted">役割</strong>
+            <div class="mt-2">
+              <% if @selected_role_ids.any? %>
+                <% medical_staff_roles = @roles.select { |r| @selected_role_ids.include?(r.id) && r.is_medical_staff? } %>
+                <% patient_roles = @roles.select { |r| @selected_role_ids.include?(r.id) && !r.is_medical_staff? } %>
+                
+                <% if medical_staff_roles.any? %>
+                  <div class="mb-2">
+                    <strong class="text-success small">医療従事者の役割:</strong><br>
+                    <% medical_staff_roles.each do |role| %>
+                      <span class="badge bg-success me-1"><%= role.name %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+                
+                <% if patient_roles.any? %>
+                  <div class="mb-2">
+                    <strong class="text-info small">患者の役割:</strong><br>
+                    <% patient_roles.each do |role| %>
+                      <span class="badge bg-info me-1"><%= role.name %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% else %>
+                <span class="text-muted">未設定</span>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">権限レベル（医療従事者の役割用）</strong>
+            <p class="h6">
+              <% if @permission_level == 'administrator' %>
+                <span class="badge bg-danger">管理者</span>
+              <% else %>
+                <span class="badge bg-secondary">一般</span>
+              <% end %>
+            </p>
+          </div>
+
+          <hr>
+
+          <div class="alert alert-warning">
+            <strong>注意:</strong> パスワードは変更できません。スタッフ本人が「パスワードを忘れた」機能から変更する必要があります。
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "← 戻って修正", edit_medical_staff_staff_path(@staff_member), class: "btn btn-secondary" %>
+            <%= f.submit "更新する", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "← スタッフ詳細に戻る", medical_staff_staff_path(@staff_member), class: "btn btn-link" %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="text-center mb-5">
+      <h1 class="h2 mb-3">ようこそ、<%= current_user.name %>さん</h1>
+      <p class="text-muted">利用する役割を選択してください</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">役割選択</h4>
+      </div>
+      <div class="card-body">
+        <% if @available_roles.any? %>
+          <div class="row g-3">
+            <% @available_roles.each do |role| %>
+              <div class="col-12 col-md-6">
+                <%= button_to switch_role_path(role_id: role.id), 
+                              method: :post, 
+                              class: "btn btn-lg w-100 h-100 py-4 #{role.id == current_user.current_role_id ? 'btn-primary' : 'btn-outline-primary'}" do %>
+                  <div class="d-flex flex-column align-items-center">
+                    <% if role.is_medical_staff %>
+                      <i class="bi bi-hospital fs-1 mb-3"></i>
+                      <h5 class="mb-2"><%= role.name %></h5>
+                      <p class="mb-0 small">医療従事者として利用</p>
+                    <% else %>
+                      <i class="bi bi-person fs-1 mb-3"></i>
+                      <h5 class="mb-2"><%= role.name %></h5>
+                      <p class="mb-0 small">患者として利用</p>
+                    <% end %>
+                    <% if role.id == current_user.current_role_id %>
+                      <span class="badge bg-success mt-2">現在の役割</span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-5">
+            <p class="text-muted">利用可能な役割がありません。</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4 text-center">
+      <% if current_user.current_role.present? %>
+        <% if current_user.current_role_medical_staff? %>
+          <%= link_to "医療従事者画面へ", medical_staff_root_path, class: "btn btn-success" %>
+        <% else %>
+          <%= link_to "患者画面へ", blood_pressure_records_path, class: "btn btn-info" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

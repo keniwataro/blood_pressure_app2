@@ -1,5 +1,5 @@
 class BloodPressureRecordsController < ApplicationController
-  before_action :set_blood_pressure_record, only: [:show, :edit, :update, :destroy]
+  before_action :set_blood_pressure_record, only: [:show, :edit, :confirm_edit, :update, :destroy]
 
   def index
     @blood_pressure_records = current_user.blood_pressure_records.recent
@@ -16,11 +16,21 @@ class BloodPressureRecordsController < ApplicationController
     @blood_pressure_record.measured_at = now.change(sec: 0)
   end
 
+  def confirm_new
+    @blood_pressure_record = current_user.blood_pressure_records.build(blood_pressure_record_params)
+    
+    if @blood_pressure_record.valid?
+      render :confirm_new
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   def create
     @blood_pressure_record = current_user.blood_pressure_records.build(blood_pressure_record_params)
     
     if @blood_pressure_record.save
-      redirect_to @blood_pressure_record, notice: t('flash.blood_pressure_records.created')
+      redirect_to @blood_pressure_record, notice: '血圧記録を登録しました。'
     else
       render :new, status: :unprocessable_entity
     end
@@ -29,9 +39,19 @@ class BloodPressureRecordsController < ApplicationController
   def edit
   end
 
+  def confirm_edit
+    @blood_pressure_record.assign_attributes(blood_pressure_record_params)
+    
+    if @blood_pressure_record.valid?
+      render :confirm_edit
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   def update
     if @blood_pressure_record.update(blood_pressure_record_params)
-      redirect_to @blood_pressure_record, notice: t('flash.blood_pressure_records.updated')
+      redirect_to @blood_pressure_record, notice: '血圧記録を更新しました。'
     else
       render :edit, status: :unprocessable_entity
     end

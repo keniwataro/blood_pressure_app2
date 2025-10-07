@@ -5,13 +5,28 @@ Rails.application.routes.draw do
   # 医療従事者用の画面
   namespace :medical_staff do
     root 'dashboard#index'
-    resources :patients, only: [:index, :show, :new, :create, :edit, :update] do
+    resources :patients, only: [:index, :show, :new, :create, :edit, :update, :destroy] do
+      collection do
+        post 'confirm_new'
+      end
+      member do
+        post 'confirm_edit'
+      end
       resources :blood_pressure_records, only: [:index, :show]
       # 担当スタッフの設定
       post 'assign_staff', to: 'patients#assign_staff'
       delete 'unassign_staff/:staff_id', to: 'patients#unassign_staff', as: 'unassign_staff'
     end
-    resources :staff, only: [:index, :show, :new, :create, :edit, :update]
+    resources :staff, only: [:index, :show, :new, :create, :edit, :update, :destroy] do
+      collection do
+        post 'confirm_new'
+      end
+      member do
+        post 'confirm_edit'
+        post 'confirm_with_role'
+        post 'confirm_reassignment'
+      end
+    end
   end
   
   # ルートページ（患者か医療従事者かで振り分け）
@@ -20,14 +35,33 @@ Rails.application.routes.draw do
   end
   root 'blood_pressure_records#index'
   
+  # 役割切り替え
+  post 'switch_role', to: 'dashboard#switch_role'
+  
   # 血圧記録のRESTfulルート
-  resources :blood_pressure_records
+  resources :blood_pressure_records do
+    collection do
+      post 'confirm_new'
+    end
+    member do
+      post 'confirm_edit'
+    end
+  end
   
   # 病院のRESTfulルート
-  resources :hospitals
+  resources :hospitals do
+    collection do
+      post 'confirm_new'
+    end
+    member do
+      post 'confirm_edit'
+    end
+  end
   
   # プロフィール管理
-  resource :profile, only: [:show, :edit, :update]
+  resource :profile, only: [:show, :edit, :update] do
+    post 'confirm', on: :collection
+  end
   
   # グラフ表示
   get 'charts', to: 'charts#index'

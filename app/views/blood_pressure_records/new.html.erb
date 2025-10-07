@@ -5,7 +5,7 @@
         <h4 class="mb-0">新しい血圧記録</h4>
       </div>
       <div class="card-body">
-        <%= form_with model: @blood_pressure_record, local: true do |f| %>
+        <%= form_with model: @blood_pressure_record, url: confirm_new_blood_pressure_records_path, data: { turbo: false } do |f| %>
           <% if @blood_pressure_record.errors.any? %>
             <div class="alert alert-danger">
               <h6>エラーが発生しました:</h6>
@@ -56,7 +56,7 @@
 
           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
             <%= link_to "キャンセル", blood_pressure_records_path, class: "btn btn-secondary" %>
-            <%= f.submit "記録を保存", class: "btn btn-primary" %>
+            <%= f.submit "確認画面へ", class: "btn btn-primary" %>
           </div>
         <% end %>
       </div>

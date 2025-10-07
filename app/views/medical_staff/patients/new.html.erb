@@ -7,7 +7,7 @@
         <h4 class="mb-0">新規患者情報入力</h4>
       </div>
       <div class="card-body">
-        <%= form_with(model: @patient, url: medical_staff_patients_path, local: true) do |f| %>
+        <%= form_with(model: @patient, url: confirm_new_medical_staff_patients_path, data: { turbo: false }) do |f| %>
           <% if @patient.errors.any? %>
             <div class="alert alert-danger">
               <h4><%= pluralize(@patient.errors.count, "個のエラー") %>が発生しました:</h4>
@@ -52,9 +52,11 @@
                                   id: "staff_#{staff.id}", 
                                   class: "form-check-input" %>
                 <%= label_tag "staff_#{staff.id}", staff.name, class: "form-check-label" %>
-                <% staff_role = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).first %>
-                <% if staff_role %>
-                  <span class="badge bg-secondary ms-2"><%= staff_role.role_name %></span>
+                <% staff_roles = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).includes(:role) %>
+                <% if staff_roles.any? %>
+                  <% staff_roles.each do |staff_role| %>
+                    <span class="badge bg-success ms-1"><%= staff_role.role_name %></span>
+                  <% end %>
                 <% end %>
               </div>
             <% end %>
@@ -76,7 +78,7 @@
 
           <div class="d-flex justify-content-between mt-4">
             <%= link_to "キャンセル", medical_staff_patients_path, class: "btn btn-secondary" %>
-            <%= f.submit "登録", class: "btn btn-primary" %>
+            <%= f.submit "確認画面へ", class: "btn btn-primary" %>
           </div>
         <% end %>
       </div>

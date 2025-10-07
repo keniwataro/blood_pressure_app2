@@ -1,0 +1,89 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h1 class="h2 mb-4">現在の役割を選択</h1>
+
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h4 class="mb-0">現在の役割が削除されます</h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning">
+          <strong>注意:</strong> 現在設定されている役割「<%= @staff_member.current_role&.name %>」が削除されるため、新しい役割を選択してください。
+        </div>
+
+        <%= form_with(model: @staff_member, url: confirm_with_role_medical_staff_staff_path(@staff_member), method: :post, data: { turbo: false }) do |f| %>
+          <!-- 元のフォームデータを保持 -->
+          <%= f.hidden_field :name %>
+          <%= f.hidden_field :email %>
+          <%= hidden_field_tag 'user[permission_level]', @permission_level %>
+          
+          <% @selected_role_ids.each do |role_id| %>
+            <%= hidden_field_tag 'role_ids[]', role_id %>
+          <% end %>
+
+          <div class="mb-4">
+            <h5 class="mb-3">スタッフ情報</h5>
+            <div class="mb-2">
+              <strong class="text-muted">名前:</strong> <%= @staff_member.name %>
+            </div>
+            <div class="mb-2">
+              <strong class="text-muted">メールアドレス:</strong> <%= @staff_member.email %>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="mb-4">
+            <h5 class="mb-3">新しく設定される役割</h5>
+            <div class="mb-2">
+              <% medical_staff_roles = @available_roles.select(&:is_medical_staff?) %>
+              <% patient_roles = @available_roles.reject(&:is_medical_staff?) %>
+              
+              <% if medical_staff_roles.any? %>
+                <div class="mb-2">
+                  <strong class="text-success small">医療従事者の役割:</strong><br>
+                  <% medical_staff_roles.each do |role| %>
+                    <span class="badge bg-success me-1"><%= role.name %></span>
+                  <% end %>
+                </div>
+              <% end %>
+              
+              <% if patient_roles.any? %>
+                <div class="mb-2">
+                  <strong class="text-info small">患者の役割:</strong><br>
+                  <% patient_roles.each do |role| %>
+                    <span class="badge bg-info me-1"><%= role.name %></span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="mb-4">
+            <label class="form-label"><strong>新しい現在の役割を選択してください <span class="text-danger">*</span></strong></label>
+            <div class="form-text mb-3">この役割がログイン時のデフォルトの役割になります</div>
+            
+            <% @available_roles.each do |role| %>
+              <div class="form-check mb-2">
+                <%= radio_button_tag 'new_current_role_id', role.id, false, class: 'form-check-input', required: true %>
+                <%= label_tag "new_current_role_id_#{role.id}", class: 'form-check-label' do %>
+                  <strong><%= role.name %></strong>
+                  <% if role.description.present? %>
+                    <small class="text-muted d-block"><%= role.description %></small>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "← 戻って修正", edit_medical_staff_staff_path(@staff_member), class: "btn btn-secondary" %>
+            <%= f.submit "確認画面へ", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

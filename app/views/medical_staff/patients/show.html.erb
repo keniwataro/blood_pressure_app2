@@ -1,14 +1,20 @@
 <div class="row justify-content-center">
   <div class="col-md-10">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h2">患者詳細</h1>
-      <%= link_to "編集", edit_medical_staff_patient_path(@patient), class: "btn btn-warning" %>
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h2">患者詳細</h1>
+        <%= button_to "削除", medical_staff_patient_path(@patient), 
+                      method: :delete,
+                      class: "btn btn-outline-danger",
+                      form: { data: { turbo_confirm: "#{@patient.name} を削除してもよろしいですか？\n\nこの操作は取り消せません。\n・患者の全ての情報が削除されます\n・血圧記録も全て削除されます\n・担当スタッフとの紐付けも解除されます" } } %>
+      </div>
     </div>
 
     <!-- 患者情報カード -->
     <div class="card mb-4">
-      <div class="card-header">
+      <div class="card-header d-flex justify-content-between align-items-center">
         <h4 class="mb-0">基本情報</h4>
+        <%= link_to "編集", edit_medical_staff_patient_path(@patient), class: "btn btn-warning btn-sm" %>
       </div>
       <div class="card-body">
         <div class="row">
@@ -45,11 +51,15 @@
           <div class="mt-2">
             <% if @assigned_staff.any? %>
               <% @assigned_staff.each do |staff| %>
-                <span class="badge bg-info fs-6 me-2"><%= staff.name %></span>
-                <% staff_role = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).first %>
-                <% if staff_role %>
-                  <span class="badge bg-secondary me-2"><%= staff_role.role_name %></span>
-                <% end %>
+                <div class="d-inline-block me-3 mb-2">
+                  <span class="badge bg-primary fs-6 me-1"><%= staff.name %></span>
+                  <% staff_roles = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).includes(:role) %>
+                  <% if staff_roles.any? %>
+                    <% staff_roles.each do |staff_role| %>
+                      <span class="badge bg-success"><%= staff_role.role_name %></span>
+                    <% end %>
+                  <% end %>
+                </div>
               <% end %>
             <% else %>
               <span class="text-muted">担当スタッフが設定されていません</span>

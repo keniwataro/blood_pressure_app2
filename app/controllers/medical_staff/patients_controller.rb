@@ -2,7 +2,7 @@ class MedicalStaff::PatientsController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_medical_staff!
   before_action :set_hospital
-  before_action :set_patient, only: [:show, :edit, :update, :assign_staff, :unassign_staff]
+  before_action :set_patient, only: [:show, :edit, :confirm_edit, :update, :destroy, :assign_staff, :unassign_staff]
 
   def index
     @patients = @hospital.patients.includes(:blood_pressure_records)
@@ -71,6 +71,19 @@ class MedicalStaff::PatientsController < ApplicationController
     @staff_members = @hospital.medical_staff.order(:name)
   end
 
+  def confirm_new
+    @patient = User.new(patient_params)
+    @patient_role = Role.find_by(name: '患者')
+    @staff_members = @hospital.medical_staff.order(:name)
+    @selected_staff_ids = params[:staff_ids]&.reject(&:blank?) || []
+    
+    if @patient.valid?
+      render :confirm_new
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   def create
     @patient = User.new(patient_params)
     @patient_role = Role.find_by(name: '患者')
@@ -106,33 +119,81 @@ class MedicalStaff::PatientsController < ApplicationController
     @assigned_staff_ids = @patient.assigned_staff_at(@hospital).pluck(:id)
   end
 
-  def update
-    if @patient.update(patient_update_params)
-      # 担当スタッフの更新
-      current_assignments = PatientStaffAssignment.where(patient: @patient, hospital: @hospital)
-      new_staff_ids = params[:staff_ids].present? ? params[:staff_ids].reject(&:blank?).map(&:to_i) : []
-      current_staff_ids = current_assignments.pluck(:staff_id)
-      
-      # 削除する担当
-      staff_ids_to_remove = current_staff_ids - new_staff_ids
-      current_assignments.where(staff_id: staff_ids_to_remove).destroy_all
-      
-      # 追加する担当
-      staff_ids_to_add = new_staff_ids - current_staff_ids
-      staff_ids_to_add.each do |staff_id|
-        PatientStaffAssignment.create(
-          patient: @patient,
-          staff_id: staff_id,
-          hospital: @hospital
-        )
-      end
-      
-      redirect_to medical_staff_patient_path(@patient), notice: '患者情報を更新しました。'
+  def confirm_edit
+    # current_role_idを保持してから属性を更新
+    original_current_role_id = @patient.current_role_id
+    
+    # patient_update_paramsを一時的に保存
+    update_params = patient_update_params
+    
+    # assign_attributesを実行
+    @patient.assign_attributes(update_params)
+    
+    # current_role_idを元に戻す（患者編集では役割は変更しない）
+    @patient.current_role_id = original_current_role_id
+    
+    @staff_members = @hospital.medical_staff.order(:name)
+    @selected_staff_ids = params[:staff_ids]&.reject(&:blank?)&.map(&:to_i) || []
+    
+    # バリデーションを実行するが、current_role_idのエラーは無視
+    @patient.valid?
+    @patient.errors.delete(:current_role_id)
+    
+    if @patient.errors.empty?
+      render :confirm_edit
     else
-      @staff_members = @hospital.medical_staff.order(:name)
       @assigned_staff_ids = @patient.assigned_staff_at(@hospital).pluck(:id)
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def update
+    # current_role_idを保持してから更新
+    original_current_role_id = @patient.current_role_id
+
+    # current_role_must_be_assignedバリデーションを一時的にスキップ
+    User.skip_callback(:validate, :current_role_must_be_assigned)
+
+    begin
+      if @patient.update(patient_update_params.except(:current_role_id))
+        # current_role_idを直接更新
+        @patient.current_role_id = original_current_role_id
+        @patient.save(validate: false)
+
+        # 担当スタッフの更新
+        current_assignments = PatientStaffAssignment.where(patient: @patient, hospital: @hospital)
+        new_staff_ids = params[:staff_ids].present? ? params[:staff_ids].reject(&:blank?).map(&:to_i) : []
+        current_staff_ids = current_assignments.pluck(:staff_id)
+
+        # 削除する担当
+        staff_ids_to_remove = current_staff_ids - new_staff_ids
+        current_assignments.where(staff_id: staff_ids_to_remove).destroy_all
+
+        # 追加する担当
+        staff_ids_to_add = new_staff_ids - current_staff_ids
+        staff_ids_to_add.each do |staff_id|
+          PatientStaffAssignment.create(
+            patient: @patient,
+            staff_id: staff_id,
+            hospital: @hospital
+          )
+        end
+
+        redirect_to medical_staff_patient_path(@patient), notice: '患者情報を更新しました。'
+      else
+        @staff_members = @hospital.medical_staff.order(:name)
+        @assigned_staff_ids = @patient.assigned_staff_at(@hospital).pluck(:id)
+        render :edit, status: :unprocessable_entity
+      end
+    ensure
+      # コールバックを元に戻す
+      User.set_callback(:validate, :current_role_must_be_assigned)
+    end
+  end
+
+  def destroy
+    @patient.destroy
+    redirect_to medical_staff_patients_path, notice: "#{@patient.name} を削除しました。"
   end
 
   # 担当スタッフを追加

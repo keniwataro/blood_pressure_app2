@@ -1,0 +1,71 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">患者登録確認</h1>
+
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h4 class="mb-0">以下の内容で登録します。よろしいですか？</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @patient, url: medical_staff_patients_path, local: true) do |f| %>
+          <!-- 入力値を hidden フィールドで保持 -->
+          <%= f.hidden_field :name %>
+          <%= f.hidden_field :email %>
+          <%= f.hidden_field :password %>
+          <%= f.hidden_field :password_confirmation %>
+          
+          <% @selected_staff_ids.each do |staff_id| %>
+            <%= hidden_field_tag 'staff_ids[]', staff_id %>
+          <% end %>
+
+          <div class="mb-3">
+            <strong class="text-muted">患者名</strong>
+            <p class="h5"><%= @patient.name %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">メールアドレス</strong>
+            <p class="h5"><%= @patient.email %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">初期パスワード</strong>
+            <p class="text-muted">●●●●●●●● (入力済み)</p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <strong class="text-muted">担当スタッフ</strong>
+            <div class="mt-2">
+              <% if @selected_staff_ids.any? %>
+                <% @selected_staff_ids.each do |staff_id| %>
+                  <% staff = @staff_members.find(staff_id) %>
+                  <span class="badge bg-info fs-6 me-2"><%= staff.name %></span>
+                <% end %>
+              <% else %>
+                <span class="text-muted">未設定</span>
+              <% end %>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="alert alert-info">
+            <strong>注意事項:</strong>
+            <ul class="mb-0">
+              <li>ユーザーIDは自動で生成されます（7桁の数字）</li>
+              <li>患者は「<%= @hospital.name %>」に自動的に登録されます</li>
+              <li>役割は「患者」として登録されます</li>
+            </ul>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "← 戻って修正", new_medical_staff_patient_path, class: "btn btn-secondary" %>
+            <%= f.submit "登録する", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

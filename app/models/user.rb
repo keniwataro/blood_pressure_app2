@@ -11,13 +11,19 @@
 #  reset_password_token   :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  current_role_id        :bigint           not null
 #  user_id                :string
 #
 # Indexes
 #
+#  index_users_on_current_role_id       (current_role_id)
 #  index_users_on_email                 (email) UNIQUE
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_user_id               (user_id) UNIQUE
+#
+# Foreign Keys
+#
+#  fk_rails_...  (current_role_id => roles.id)
 #
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
@@ -31,6 +37,7 @@ class User < ApplicationRecord
   has_many :user_hospital_roles, dependent: :destroy
   has_many :hospitals, through: :user_hospital_roles
   has_many :roles, through: :user_hospital_roles
+  belongs_to :current_role, class_name: 'Role', optional: true
   
   # 患者としての担当スタッフ関連
   has_many :patient_staff_assignments_as_patient, 
@@ -54,9 +61,12 @@ class User < ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
   validates :user_id, presence: true, uniqueness: true, format: { with: /\A\d+\z/, message: "は数字のみで入力してください" }
   validates :email, presence: true, uniqueness: true
+  validates :current_role_id, presence: true
+  validate :current_role_must_be_assigned
   
   # コールバック
   before_validation :generate_user_id, on: :create
+  before_validation :set_default_current_role, on: :create
   attr_readonly :user_id
   
   # メールアドレスのバリデーションをカスタマイズ（Deviseのデフォルトを上書き）
@@ -121,6 +131,34 @@ class User < ApplicationRecord
       .distinct
   end
   
+  # 利用可能な役割を取得
+  def available_roles
+    roles.distinct
+  end
+  
+  # 複数の役割を持っているかチェック
+  def has_multiple_roles?
+    available_roles.count > 1
+  end
+  
+  # 現在の役割が医療従事者かチェック
+  def current_role_medical_staff?
+    current_role&.is_medical_staff == true
+  end
+  
+  # 現在の役割が患者かチェック
+  def current_role_patient?
+    current_role&.is_medical_staff == false
+  end
+  
+  # 役割を切り替え
+  def switch_to_role!(role_id)
+    role = available_roles.find_by(id: role_id)
+    if role
+      update(current_role_id: role_id)
+    end
+  end
+  
   private
   
   def generate_user_id
@@ -130,6 +168,29 @@ class User < ApplicationRecord
       # 7桁のランダムな数字を生成
       new_user_id = rand(1000000..9999999).to_s
       break self.user_id = new_user_id unless User.exists?(user_id: new_user_id)
+    end
+  end
+  
+  def set_default_current_role
+    return if current_role_id.present?
+    
+    # デフォルトは患者の役割
+    patient_role = Role.find_by(name: '患者')
+    self.current_role_id = patient_role&.id if patient_role
+  end
+  
+  # current_role_idが自分の持つ役割の中にあるかチェック
+  def current_role_must_be_assigned
+    return if current_role_id.blank?
+    
+    # 新規作成時はスキップ（まだuser_hospital_rolesが作成されていないため）
+    return if new_record?
+    
+    # 自分が持っている役割のIDリストを取得
+    assigned_role_ids = roles.pluck(:id)
+    
+    unless assigned_role_ids.include?(current_role_id)
+      errors.add(:current_role_id, "は自分に割り当てられた役割ではありません")
     end
   end
 end

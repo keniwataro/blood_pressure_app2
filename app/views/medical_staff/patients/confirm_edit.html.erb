@@ -1,0 +1,69 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">患者情報更新確認</h1>
+
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h4 class="mb-0">以下の内容で更新します。よろしいですか？</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @patient, url: medical_staff_patient_path(@patient), method: :patch, local: true) do |f| %>
+          <!-- 入力値を hidden フィールドで保持 -->
+          <%= f.hidden_field :name %>
+          <%= f.hidden_field :email %>
+          
+          <% @selected_staff_ids.each do |staff_id| %>
+            <%= hidden_field_tag 'staff_ids[]', staff_id %>
+          <% end %>
+
+          <div class="mb-3">
+            <strong class="text-muted">ユーザーID</strong>
+            <p class="h5 text-primary"><%= @patient.user_id %></p>
+            <div class="form-text">ユーザーIDは変更できません</div>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">患者名</strong>
+            <p class="h5"><%= @patient.name %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">メールアドレス</strong>
+            <p class="h5"><%= @patient.email %></p>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <strong class="text-muted">担当スタッフ</strong>
+            <div class="mt-2">
+              <% if @selected_staff_ids.any? %>
+                <% @selected_staff_ids.each do |staff_id| %>
+                  <% staff = @staff_members.find(staff_id) %>
+                  <span class="badge bg-info fs-6 me-2"><%= staff.name %></span>
+                <% end %>
+              <% else %>
+                <span class="text-muted">未設定</span>
+              <% end %>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="alert alert-warning">
+            <strong>注意:</strong> パスワードは変更できません。患者本人が「パスワードを忘れた」機能から変更する必要があります。
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "← 戻って修正", edit_medical_staff_patient_path(@patient), class: "btn btn-secondary" %>
+            <%= f.submit "更新する", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "← 患者詳細に戻る", medical_staff_patient_path(@patient), class: "btn btn-link" %>
+    </div>
+  </div>
+</div>

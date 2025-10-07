@@ -1,0 +1,101 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">担当患者の引き継ぎ</h1>
+
+    <div class="card">
+      <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0">医療従事者の役割がなくなります</h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning">
+          <strong>注意:</strong> <%= @staff_member.name %> さんは医療従事者の役割がなくなり、患者の役割のみになります。<br>
+          現在担当している患者を別のスタッフに引き継ぐ必要があります。
+        </div>
+
+        <%= form_with(model: @staff_member, url: confirm_reassignment_medical_staff_staff_path(@staff_member), method: :post, data: { turbo: false }) do |f| %>
+          <!-- 元のフォームデータを保持 -->
+          <%= f.hidden_field :name %>
+          <%= f.hidden_field :email %>
+          <%= hidden_field_tag 'user[permission_level]', @permission_level %>
+          
+          <% @selected_role_ids.each do |role_id| %>
+            <%= hidden_field_tag 'role_ids[]', role_id %>
+          <% end %>
+
+          <div class="mb-4">
+            <h5 class="mb-3">スタッフ情報</h5>
+            <div class="mb-2">
+              <strong class="text-muted">名前:</strong> <%= @staff_member.name %>
+            </div>
+            <div class="mb-2">
+              <strong class="text-muted">メールアドレス:</strong> <%= @staff_member.email %>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="mb-4">
+            <h5 class="mb-3">担当患者の引き継ぎ先を選択</h5>
+            <p class="text-muted">各患者について、新しい担当スタッフを選択してください。</p>
+            
+            <% if @assigned_patients.any? %>
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead class="table-light">
+                    <tr>
+                      <th>患者名</th>
+                      <th>ユーザーID</th>
+                      <th style="width: 40%;">新しい担当スタッフ <span class="text-danger">*</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @assigned_patients.each do |patient| %>
+                      <% available_staff_for_patient = @patient_available_staff[patient.id] %>
+                      <tr>
+                        <td><%= patient.name %></td>
+                        <td class="text-muted"><%= patient.user_id %></td>
+                        <td>
+                          <% if available_staff_for_patient.any? %>
+                            <%= select_tag "patient_reassignments[#{patient.id}]",
+                                          options_from_collection_for_select(available_staff_for_patient, :id, :name),
+                                          { 
+                                            class: "form-select",
+                                            required: true,
+                                            prompt: "担当スタッフを選択してください"
+                                          } %>
+                          <% else %>
+                            <span class="text-danger">引き継ぎ可能なスタッフがいません</span>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="alert alert-info">
+                担当患者はいません。
+              </div>
+            <% end %>
+          </div>
+
+          <hr>
+
+          <div class="alert alert-info">
+            <strong>注意事項:</strong>
+            <ul class="mb-0">
+              <li>全ての患者について新しい担当スタッフを選択する必要があります</li>
+              <li>引き継ぎ後、このスタッフは患者としてのみシステムを利用できます</li>
+              <li>引き継ぎ先のスタッフは、自動的にその患者の担当として追加されます</li>
+            </ul>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "← 戻って修正", edit_medical_staff_staff_path(@staff_member), class: "btn btn-secondary" %>
+            <%= f.submit "確認画面へ", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

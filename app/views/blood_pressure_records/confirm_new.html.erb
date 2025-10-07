@@ -1,0 +1,73 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h1 class="h2 mb-4">血圧記録登録確認</h1>
+
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h4 class="mb-0">以下の内容で登録します。よろしいですか？</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @blood_pressure_record, local: true do |f| %>
+          <%= f.hidden_field :measured_at %>
+          <%= f.hidden_field :systolic_pressure %>
+          <%= f.hidden_field :diastolic_pressure %>
+          <%= f.hidden_field :pulse_rate %>
+          <%= f.hidden_field :memo %>
+
+          <div class="mb-3">
+            <strong class="text-muted">測定日時</strong>
+            <p class="h5"><%= @blood_pressure_record.measured_at.strftime("%Y年%m月%d日 %H:%M") %></p>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <strong class="text-muted">最高血圧</strong>
+                <p class="h4 text-danger"><%= @blood_pressure_record.systolic_pressure %> mmHg</p>
+                <small class="text-muted">上の血圧</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <strong class="text-muted">最低血圧</strong>
+                <p class="h4 text-primary"><%= @blood_pressure_record.diastolic_pressure %> mmHg</p>
+                <small class="text-muted">下の血圧</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">脈拍</strong>
+            <p class="h5"><%= @blood_pressure_record.pulse_rate %> bpm</p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">分類</strong>
+            <p>
+              <span class="badge bg-<%= case @blood_pressure_record.blood_pressure_category
+                                        when '正常血圧' then 'success'
+                                        when '正常高値血圧' then 'info'
+                                        when '軽症高血圧（Ⅰ度）' then 'warning'
+                                        else 'danger'
+                                        end %> fs-6">
+                <%= @blood_pressure_record.blood_pressure_category %>
+              </span>
+            </p>
+          </div>
+
+          <% if @blood_pressure_record.memo.present? %>
+            <div class="mb-3">
+              <strong class="text-muted">メモ</strong>
+              <p><%= simple_format(@blood_pressure_record.memo) %></p>
+            </div>
+          <% end %>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+            <%= link_to "← 戻って修正", new_blood_pressure_record_path, class: "btn btn-secondary" %>
+            <%= f.submit "登録する", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

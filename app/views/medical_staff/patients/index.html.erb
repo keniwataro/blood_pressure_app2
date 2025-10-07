@@ -79,11 +79,11 @@
                   <% assigned_staff.each do |staff| %>
                     <div class="d-flex justify-content-between align-items-center mb-1">
                       <span class="badge bg-info me-1"><%= staff.name %></span>
-                      <%= button_to "×", medical_staff_patient_unassign_staff_path(patient, staff), 
+                      <%= button_to "×", medical_staff_patient_unassign_staff_path(patient, staff_id: staff.id), 
                                     method: :delete,
                                     class: "btn btn-sm btn-outline-danger py-0 px-1",
                                     style: "line-height: 1;",
-                                    data: { turbo_confirm: "#{staff.name}を担当から解除しますか？" } %>
+                                    form: { data: { turbo_confirm: "#{staff.name}を担当から解除しますか？" } } %>
                     </div>
                   <% end %>
                 <% else %>

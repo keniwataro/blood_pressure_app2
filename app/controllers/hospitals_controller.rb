@@ -1,7 +1,7 @@
 class HospitalsController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_medical_staff!
-  before_action :set_hospital, only: [:show, :edit, :update, :destroy]
+  before_action :set_hospital, only: [:show, :edit, :confirm_edit, :update, :destroy]
 
   def index
     @hospitals = Hospital.all
@@ -15,11 +15,21 @@ class HospitalsController < ApplicationController
     @hospital = Hospital.new
   end
 
+  def confirm_new
+    @hospital = Hospital.new(hospital_params)
+    
+    if @hospital.valid?
+      render :confirm_new
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   def create
     @hospital = Hospital.new(hospital_params)
     
     if @hospital.save
-      redirect_to @hospital, notice: t('flash.hospitals.created')
+      redirect_to @hospital, notice: '病院を登録しました。'
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,9 +38,19 @@ class HospitalsController < ApplicationController
   def edit
   end
 
+  def confirm_edit
+    @hospital.assign_attributes(hospital_params)
+    
+    if @hospital.valid?
+      render :confirm_edit
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   def update
     if @hospital.update(hospital_params)
-      redirect_to @hospital, notice: t('flash.hospitals.updated')
+      redirect_to @hospital, notice: '病院情報を更新しました。'
     else
       render :edit, status: :unprocessable_entity
     end

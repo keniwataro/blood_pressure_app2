@@ -1,16 +1,24 @@
 <div class="row justify-content-center">
   <div class="col-md-8">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h2">スタッフ詳細</h1>
-      <% if current_user.administrator_at?(@hospital) %>
-        <%= link_to "編集", edit_medical_staff_staff_path(@staff_member), class: "btn btn-warning" %>
-      <% end %>
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h2">スタッフ詳細</h1>
+        <% if current_user.administrator_at?(@hospital) %>
+          <%= button_to "削除", medical_staff_staff_path(@staff_member), 
+                        method: :delete,
+                        class: "btn btn-outline-danger",
+                        form: { data: { turbo_confirm: "#{@staff_member.name} を削除してもよろしいですか？\n\nこの操作は取り消せません。\n・スタッフの全ての情報が削除されます\n・担当患者との紐付けも解除されます" } } %>
+        <% end %>
+      </div>
     </div>
 
     <!-- スタッフ情報カード -->
     <div class="card">
-      <div class="card-header">
+      <div class="card-header d-flex justify-content-between align-items-center">
         <h4 class="mb-0">基本情報</h4>
+        <% if current_user.administrator_at?(@hospital) %>
+          <%= link_to "編集", edit_medical_staff_staff_path(@staff_member), class: "btn btn-warning btn-sm" %>
+        <% end %>
       </div>
       <div class="card-body">
         <div class="row">

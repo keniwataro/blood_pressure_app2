@@ -5,7 +5,7 @@
         <h4 class="mb-0">病院情報の編集</h4>
       </div>
       <div class="card-body">
-        <%= form_with model: @hospital, local: true do |f| %>
+        <%= form_with model: @hospital, url: confirm_edit_hospital_path(@hospital), method: :post, data: { turbo: false } do |f| %>
           <% if @hospital.errors.any? %>
             <div class="alert alert-danger">
               <h6>エラーが発生しました:</h6>
@@ -45,7 +45,7 @@
             </div>
             <div>
               <%= link_to "キャンセル", @hospital, class: "btn btn-outline-secondary" %>
-              <%= f.submit "更新", class: "btn btn-primary" %>
+              <%= f.submit "確認画面へ", class: "btn btn-primary" %>
             </div>
           </div>
         <% end %>
