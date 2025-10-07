@@ -1,4 +1,6 @@
 class HospitalsController < ApplicationController
+  before_action :authenticate_user!
+  before_action :authorize_medical_staff!
   before_action :set_hospital, only: [:show, :edit, :update, :destroy]
 
   def index
@@ -47,5 +49,11 @@ class HospitalsController < ApplicationController
 
   def hospital_params
     params.require(:hospital).permit(:name, :address, :phone_number, :website)
+  end
+
+  def authorize_medical_staff!
+    unless current_user.medical_staff?
+      redirect_to root_path, alert: '医療従事者のみアクセスできます。'
+    end
   end
 end

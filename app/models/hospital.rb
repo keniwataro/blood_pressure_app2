@@ -11,6 +11,11 @@
 #  updated_at   :datetime         not null
 #
 class Hospital < ApplicationRecord
+  # アソシエーション
+  has_many :user_hospital_roles, dependent: :destroy
+  has_many :users, through: :user_hospital_roles
+  has_many :roles, through: :user_hospital_roles
+  
   # バリデーション
   validates :name, presence: true, length: { maximum: 100 }
   validates :address, presence: true, length: { maximum: 255 }
@@ -19,4 +24,13 @@ class Hospital < ApplicationRecord
 
   # スコープ
   scope :with_name, ->(name) { where("name ILIKE ?", "%#{name}%") }
+  
+  # メソッド
+  def medical_staff
+    users.joins(:user_hospital_roles).merge(UserHospitalRole.joins(:role).merge(Role.medical_staff)).distinct
+  end
+  
+  def patients
+    users.joins(:user_hospital_roles).merge(UserHospitalRole.joins(:role).merge(Role.patients)).distinct
+  end
 end

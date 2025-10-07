@@ -1,0 +1,77 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2">スタッフ一覧</h1>
+  <% if current_user.administrator_at?(@hospital) %>
+    <%= link_to "スタッフを追加", new_medical_staff_staff_path, class: "btn btn-primary" %>
+  <% end %>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">病院: <%= @hospital.name %></h5>
+    <p class="text-muted mb-0">登録スタッフ数: <strong><%= @staff_members.count %></strong>人</p>
+  </div>
+</div>
+
+<div class="row">
+  <% if @staff_members.any? %>
+    <% @staff_members.each do |staff| %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title"><%= staff.name %></h5>
+            <% if current_user.administrator_at?(@hospital) %>
+              <p class="card-text">
+                <strong>ユーザーID:</strong> <%= staff.user_id %><br>
+                <strong>メールアドレス:</strong><br>
+                <%= staff.email %>
+              </p>
+            <% end %>
+            <hr>
+            <div class="mb-2">
+              <strong class="text-muted">役割:</strong><br>
+              <% staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).each do |uhr| %>
+                <span class="badge bg-<%= case uhr.role.name
+                                          when '医師' then 'primary'
+                                          when '看護師' then 'success'
+                                          when '医療事務' then 'info'
+                                          else 'secondary'
+                                          end %> me-1">
+                  <%= uhr.role.name %>
+                </span>
+                <span class="badge bg-<%= uhr.permission_level_administrator? ? 'danger' : 'secondary' %> me-1">
+                  <%= uhr.permission_level_administrator? ? '管理者' : '一般' %>
+                </span>
+              <% end %>
+            </div>
+            <% if current_user.administrator_at?(@hospital) %>
+              <p class="card-text">
+                <small class="text-muted">登録日: <%= staff.created_at.strftime("%Y年%m月%d日") %></small>
+              </p>
+            <% end %>
+          </div>
+          <div class="card-footer bg-transparent">
+            <div class="d-flex gap-2">
+              <%= link_to "詳細", medical_staff_staff_path(staff), class: "btn btn-info btn-sm flex-fill" %>
+              <% if current_user.administrator_at?(@hospital) %>
+                <%= link_to "編集", edit_medical_staff_staff_path(staff), class: "btn btn-warning btn-sm flex-fill" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">まだスタッフが登録されていません。</p>
+        <% if current_user.administrator_at?(@hospital) %>
+          <%= link_to "最初のスタッフを登録", new_medical_staff_staff_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="mt-4">
+  <%= link_to "← ダッシュボードに戻る", medical_staff_root_path, class: "btn btn-secondary" %>
+</div>

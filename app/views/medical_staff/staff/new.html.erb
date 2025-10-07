@@ -1,0 +1,85 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">スタッフ登録</h1>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">新規スタッフ情報入力</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @staff_member, url: medical_staff_staff_index_path, local: true) do |f| %>
+          <% if @staff_member.errors.any? %>
+            <div class="alert alert-danger">
+              <h4><%= pluralize(@staff_member.errors.count, "個のエラー") %>が発生しました:</h4>
+              <ul class="mb-0">
+                <% @staff_member.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :name, "スタッフ名", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", placeholder: "例: 山田太郎", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, "メールアドレス", class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", placeholder: "例: staff@example.com", required: true %>
+            <div class="form-text">スタッフがログインする際に使用します（必須）</div>
+          </div>
+
+          <div class="mb-3">
+            <%= label_tag :role_id, "役割", class: "form-label" %>
+            <%= select_tag 'user[role_id]', 
+                          options_for_select(@roles.map { |r| [r.name, r.id] }), 
+                          class: "form-select", 
+                          required: true %>
+            <div class="form-text">スタッフの役割を選択してください</div>
+          </div>
+
+          <div class="mb-3">
+            <%= label_tag :permission_level, "権限レベル", class: "form-label" %>
+            <%= select_tag 'user[permission_level]', 
+                          options_for_select([
+                            ['一般', 'general'],
+                            ['管理者', 'administrator']
+                          ], 'general'), 
+                          class: "form-select", 
+                          required: true %>
+            <div class="form-text">
+              <strong>管理者:</strong> スタッフの登録・編集が可能<br>
+              <strong>一般:</strong> スタッフの閲覧のみ可能
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password, "初期パスワード", class: "form-label" %>
+            <%= f.password_field :password, class: "form-control", placeholder: "8文字以上", required: true %>
+            <div class="form-text">スタッフに初期パスワードを伝えてください</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password_confirmation, "パスワード（確認）", class: "form-label" %>
+            <%= f.password_field :password_confirmation, class: "form-control", placeholder: "8文字以上", required: true %>
+          </div>
+
+          <div class="alert alert-info">
+            <strong>注意事項:</strong>
+            <ul class="mb-0">
+              <li>ユーザーIDは自動で生成されます（7桁の数字）</li>
+              <li>スタッフは「<%= @hospital.name %>」に自動的に登録されます</li>
+              <li>登録後、スタッフにユーザーIDとパスワードを伝えてください</li>
+            </ul>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "キャンセル", medical_staff_staff_index_path, class: "btn btn-secondary" %>
+            <%= f.submit "登録", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

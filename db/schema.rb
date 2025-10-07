@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_06_071712) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_06_092429) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -35,6 +35,41 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_06_071712) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "patient_staff_assignments", force: :cascade do |t|
+    t.bigint "patient_id", null: false
+    t.bigint "staff_id", null: false
+    t.bigint "hospital_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["hospital_id"], name: "index_patient_staff_assignments_on_hospital_id"
+    t.index ["patient_id", "staff_id", "hospital_id"], name: "index_patient_staff_assignments_unique", unique: true
+    t.index ["patient_id"], name: "index_patient_staff_assignments_on_patient_id"
+    t.index ["staff_id"], name: "index_patient_staff_assignments_on_staff_id"
+  end
+
+  create_table "roles", force: :cascade do |t|
+    t.string "name", null: false
+    t.boolean "is_medical_staff", default: false, null: false
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_roles_on_name", unique: true
+  end
+
+  create_table "user_hospital_roles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "hospital_id", null: false
+    t.bigint "role_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "permission_level", default: 0, null: false
+    t.index ["hospital_id"], name: "index_user_hospital_roles_on_hospital_id"
+    t.index ["permission_level"], name: "index_user_hospital_roles_on_permission_level"
+    t.index ["role_id"], name: "index_user_hospital_roles_on_role_id"
+    t.index ["user_id", "hospital_id", "role_id"], name: "index_user_hospital_roles_unique", unique: true
+    t.index ["user_id"], name: "index_user_hospital_roles_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -51,4 +86,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_06_071712) do
   end
 
   add_foreign_key "blood_pressure_records", "users"
+  add_foreign_key "patient_staff_assignments", "hospitals"
+  add_foreign_key "patient_staff_assignments", "users", column: "patient_id"
+  add_foreign_key "patient_staff_assignments", "users", column: "staff_id"
+  add_foreign_key "user_hospital_roles", "hospitals"
+  add_foreign_key "user_hospital_roles", "roles"
+  add_foreign_key "user_hospital_roles", "users"
 end

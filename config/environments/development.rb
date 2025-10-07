@@ -86,12 +86,12 @@ Rails.application.configure do
   # Bullet configuration for N+1 query detection
   config.after_initialize do
     Bullet.enable = true
-    Bullet.alert = true
+    Bullet.alert = false  # ブラウザのアラートを無効化
     Bullet.bullet_logger = true
     Bullet.console = true
     Bullet.rails_logger = true
-    Bullet.add_footer = true
-    Bullet.skip_html_injection = false
+    Bullet.add_footer = false  # 画面下部の吹き出しを無効化
+    Bullet.skip_html_injection = true  # HTML注入を無効化
   end
 
   # Letter Opener configuration

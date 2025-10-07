@@ -1,0 +1,300 @@
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h2">患者詳細</h1>
+      <%= link_to "編集", edit_medical_staff_patient_path(@patient), class: "btn btn-warning" %>
+    </div>
+
+    <!-- 患者情報カード -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4 class="mb-0">基本情報</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong class="text-muted">患者名</strong>
+              <p class="h5"><%= @patient.name %></p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong class="text-muted">ユーザーID</strong>
+              <p class="h5 text-primary"><%= @patient.user_id %></p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong class="text-muted">メールアドレス</strong>
+              <p><%= @patient.email %></p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong class="text-muted">登録日</strong>
+              <p><%= @patient.created_at.strftime("%Y年%m月%d日") %></p>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div class="mb-3">
+          <strong class="text-muted">担当スタッフ</strong>
+          <div class="mt-2">
+            <% if @assigned_staff.any? %>
+              <% @assigned_staff.each do |staff| %>
+                <span class="badge bg-info fs-6 me-2"><%= staff.name %></span>
+                <% staff_role = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).first %>
+                <% if staff_role %>
+                  <span class="badge bg-secondary me-2"><%= staff_role.role_name %></span>
+                <% end %>
+              <% end %>
+            <% else %>
+              <span class="text-muted">担当スタッフが設定されていません</span>
+            <% end %>
+          </div>
+        </div>
+        <hr>
+        <div class="row text-center">
+          <div class="col-4">
+            <h5 class="text-primary"><%= @patient.blood_pressure_records.count %></h5>
+            <small class="text-muted">総記録数</small>
+          </div>
+          <div class="col-4">
+            <h5 class="text-success"><%= @patient.blood_pressure_records.this_month.count %></h5>
+            <small class="text-muted">今月の記録</small>
+          </div>
+          <div class="col-4">
+            <% if @patient.blood_pressure_records.any? %>
+              <h5 class="text-info"><%= time_ago_in_words(@patient.blood_pressure_records.recent.first.measured_at) %>前</h5>
+              <small class="text-muted">最後の記録</small>
+            <% else %>
+              <h5 class="text-muted">-</h5>
+              <small class="text-muted">記録なし</small>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 期間選択 -->
+    <div id="chart-section" class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">グラフ表示期間</h5>
+        <div class="d-flex gap-2 flex-wrap">
+          <%= link_to "全て", medical_staff_patient_path(@patient, period: 'all', anchor: 'chart-section'),
+                      class: "btn flex-fill #{'btn-primary' if @period == 'all'} #{'btn-outline-primary' if @period != 'all'}" %>
+          <%= link_to "1ヶ月", medical_staff_patient_path(@patient, period: 'month', anchor: 'chart-section'),
+                      class: "btn flex-fill #{'btn-success' if @period == 'month'} #{'btn-outline-success' if @period != 'month'}" %>
+          <%= link_to "1週間", medical_staff_patient_path(@patient, period: 'week', anchor: 'chart-section'),
+                      class: "btn flex-fill #{'btn-info' if @period == 'week'} #{'btn-outline-info' if @period != 'week'}" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 月・週のナビゲーション -->
+    <% if @period == 'month' %>
+      <div class="card mb-4">
+        <div class="card-body">
+          <!-- 月選択セレクトボックス -->
+          <div class="row mb-3">
+            <div class="col-12 col-md-6 mx-auto">
+              <%= form_with url: medical_staff_patient_path(@patient, anchor: 'chart-section'), method: :get, local: true, class: "row g-2" do |f| %>
+                <%= f.hidden_field :period, value: 'month' %>
+                <div class="col-5">
+                  <%= f.select :year,
+                              ((Time.current.year - 5)..(Time.current.year)).to_a.reverse,
+                              { selected: @year },
+                              { class: "form-select", onchange: "this.form.submit()" } %>
+                </div>
+                <div class="col-5">
+                  <%= f.select :month,
+                              (1..12).map { |m| ["#{m}月", m] },
+                              { selected: @month },
+                              { class: "form-select", onchange: "this.form.submit()" } %>
+                </div>
+                <div class="col-2">
+                  <%= f.submit "表示", class: "btn btn-primary w-100" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- 前月・次月ナビゲーション -->
+          <div class="d-flex justify-content-center align-items-center gap-2">
+            <% prev_month = @month == 1 ? 12 : @month - 1 %>
+            <% prev_year = @month == 1 ? @year - 1 : @year %>
+            <%= link_to "← 前月", medical_staff_patient_path(@patient, period: 'month', year: prev_year, month: prev_month, anchor: 'chart-section'),
+                        class: "btn btn-sm btn-outline-secondary" %>
+
+            <div class="text-center px-3">
+              <h5 class="mb-0">
+                <%= @year %>年<%= @month %>月
+                <small class="text-muted d-block d-md-inline ms-md-2">
+                  (<%= @month_start.strftime("%m/%d") %> 〜 <%= @month_end.strftime("%m/%d") %>)
+                </small>
+              </h5>
+            </div>
+
+            <% next_month = @month == 12 ? 1 : @month + 1 %>
+            <% next_year = @month == 12 ? @year + 1 : @year %>
+            <%= link_to "次月 →", medical_staff_patient_path(@patient, period: 'month', year: next_year, month: next_month, anchor: 'chart-section'),
+                        class: "btn btn-sm btn-outline-secondary #{'disabled' if @is_current_month}",
+                        disabled: @is_current_month %>
+          </div>
+        </div>
+      </div>
+    <% elsif @period == 'week' %>
+      <div class="card mb-4">
+        <div class="card-body">
+          <!-- 週選択セレクトボックス -->
+          <div class="row mb-3">
+            <div class="col-12 col-md-6 mx-auto">
+              <%= form_with url: medical_staff_patient_path(@patient, anchor: 'chart-section'), method: :get, local: true, class: "row g-2" do |f| %>
+                <%= f.hidden_field :period, value: 'week' %>
+                <div class="col-10">
+                  <%= f.select :week_offset,
+                              (-12..0).to_a.reverse.map { |offset|
+                                week_start = Time.current.beginning_of_week(:monday) + offset.weeks
+                                week_end = week_start.end_of_week(:sunday)
+                                label = if offset == 0
+                                          "今週 (#{week_start.strftime('%m/%d')} 〜 #{week_end.strftime('%m/%d')})"
+                                        else
+                                          "#{week_start.strftime('%Y年%m/%d')} 〜 #{week_end.strftime('%m/%d')}"
+                                        end
+                                [label, offset]
+                              },
+                              { selected: @week_offset },
+                              { class: "form-select", onchange: "this.form.submit()" } %>
+                </div>
+                <div class="col-2">
+                  <%= f.submit "表示", class: "btn btn-primary w-100" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- 前週・次週ナビゲーション -->
+          <div class="d-flex justify-content-center align-items-center gap-2">
+            <%= link_to "← 前週", medical_staff_patient_path(@patient, period: 'week', week_offset: @week_offset - 1, anchor: 'chart-section'),
+                        class: "btn btn-sm btn-outline-secondary" %>
+
+            <div class="text-center px-3">
+              <h5 class="mb-0">
+                <%= @week_start.strftime("%Y年%m月%d日") %>（月）〜 <%= @week_end.strftime("%m月%d日") %>（日）
+              </h5>
+            </div>
+
+            <%= link_to "次週 →", medical_staff_patient_path(@patient, period: 'week', week_offset: @week_offset + 1, anchor: 'chart-section'),
+                        class: "btn btn-sm btn-outline-secondary #{'disabled' if @is_current_week}",
+                        disabled: @is_current_week %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- グラフ表示エリア -->
+    <div class="row mb-4"
+         data-controller="chart"
+         data-chart-data-value="<%= @chart_data.to_json %>">
+      <!-- 血圧グラフ -->
+      <div class="col-12 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">血圧推移</h5>
+          </div>
+          <div class="card-body">
+            <div style="position: relative; height: 400px;">
+              <canvas data-chart-target="bloodPressure"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 脈拍グラフ -->
+      <div class="col-12 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">脈拍推移</h5>
+          </div>
+          <div class="card-body">
+            <div style="position: relative; height: 300px;">
+              <canvas data-chart-target="pulse"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 血圧記録一覧 -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">血圧記録（最新20件）</h5>
+      </div>
+      <div class="card-body">
+        <% if @blood_pressure_records.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>測定日時</th>
+                  <th>最高血圧</th>
+                  <th>最低血圧</th>
+                  <th>脈拍</th>
+                  <th>分類</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @blood_pressure_records.each do |record| %>
+                  <tr>
+                    <td><%= record.measured_at.strftime("%Y/%m/%d %H:%M") %></td>
+                    <td>
+                      <span class="<%= record.systolic_pressure >= 140 ? 'blood-pressure-high' : 'blood-pressure-normal' %>">
+                        <%= record.systolic_pressure %> mmHg
+                      </span>
+                    </td>
+                    <td>
+                      <span class="<%= record.diastolic_pressure >= 90 ? 'blood-pressure-high' : 'blood-pressure-normal' %>">
+                        <%= record.diastolic_pressure %> mmHg
+                      </span>
+                    </td>
+                    <td><%= record.pulse_rate %> bpm</td>
+                    <td>
+                      <span class="badge bg-<%= case record.blood_pressure_category
+                                                when '正常血圧' then 'success'
+                                                when '正常高値血圧' then 'info'
+                                                when '軽症高血圧（Ⅰ度）' then 'warning'
+                                                else 'danger'
+                                                end %>">
+                        <%= record.blood_pressure_category %>
+                      </span>
+                    </td>
+                    <td>
+                      <%= link_to "詳細", medical_staff_patient_blood_pressure_record_path(@patient, record), class: "btn btn-sm btn-info" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          <% if @patient.blood_pressure_records.count > 20 %>
+            <div class="text-center mt-3">
+              <p class="text-muted">最新の20件を表示しています。</p>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-5">
+            <p class="text-muted">まだ血圧記録がありません。</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "← 患者一覧に戻る", medical_staff_patients_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+</div>

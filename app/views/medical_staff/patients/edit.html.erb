@@ -1,0 +1,79 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">患者情報編集</h1>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">患者: <%= @patient.name %></h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @patient, url: medical_staff_patient_path(@patient), method: :patch, local: true) do |f| %>
+          <% if @patient.errors.any? %>
+            <div class="alert alert-danger">
+              <h4><%= pluralize(@patient.errors.count, "個のエラー") %>が発生しました:</h4>
+              <ul class="mb-0">
+                <% @patient.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <strong class="text-muted">ユーザーID</strong>
+            <p class="h5 text-primary"><%= @patient.user_id %></p>
+            <div class="form-text">ユーザーIDは変更できません</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :name, "患者名", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, "メールアドレス", class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", required: true %>
+            <div class="form-text">メールアドレスの変更には注意してください</div>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="form-label"><strong>担当スタッフ</strong></label>
+            <div class="form-text mb-2">この患者の担当スタッフを選択してください（複数選択可）</div>
+            <% @staff_members.each do |staff| %>
+              <div class="form-check">
+                <%= check_box_tag 'staff_ids[]', staff.id, @assigned_staff_ids.include?(staff.id), 
+                                  id: "staff_#{staff.id}", 
+                                  class: "form-check-input" %>
+                <%= label_tag "staff_#{staff.id}", staff.name, class: "form-check-label" %>
+                <% staff_role = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).first %>
+                <% if staff_role %>
+                  <span class="badge bg-secondary ms-2"><%= staff_role.role_name %></span>
+                <% end %>
+              </div>
+            <% end %>
+            <% if @staff_members.empty? %>
+              <p class="text-muted">担当可能なスタッフがいません。</p>
+            <% end %>
+          </div>
+
+          <hr>
+
+          <div class="alert alert-warning">
+            <strong>注意:</strong> パスワードは変更できません。患者本人が「パスワードを忘れた」機能から変更する必要があります。
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "キャンセル", medical_staff_patient_path(@patient), class: "btn btn-secondary" %>
+            <%= f.submit "更新", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "← 患者詳細に戻る", medical_staff_patient_path(@patient), class: "btn btn-link" %>
+    </div>
+  </div>
+</div>

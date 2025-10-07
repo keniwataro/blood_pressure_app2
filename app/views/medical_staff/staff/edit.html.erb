@@ -1,0 +1,79 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">スタッフ情報編集</h1>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">スタッフ: <%= @staff_member.name %></h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @staff_member, url: medical_staff_staff_path(@staff_member), method: :patch, local: true) do |f| %>
+          <% if @staff_member.errors.any? %>
+            <div class="alert alert-danger">
+              <h4><%= pluralize(@staff_member.errors.count, "個のエラー") %>が発生しました:</h4>
+              <ul class="mb-0">
+                <% @staff_member.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <strong class="text-muted">ユーザーID</strong>
+            <p class="h5 text-primary"><%= @staff_member.user_id %></p>
+            <div class="form-text">ユーザーIDは変更できません</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :name, "スタッフ名", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, "メールアドレス", class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", required: true %>
+            <div class="form-text">メールアドレスの変更には注意してください</div>
+          </div>
+
+          <div class="mb-3">
+            <%= label_tag :role_id, "役割", class: "form-label" %>
+            <%= select_tag 'user[role_id]', 
+                          options_for_select(@roles.map { |r| [r.name, r.id] }, @current_role&.id), 
+                          class: "form-select", 
+                          required: true %>
+            <div class="form-text">スタッフの役割を変更できます</div>
+          </div>
+
+          <div class="mb-3">
+            <%= label_tag :permission_level, "権限レベル", class: "form-label" %>
+            <%= select_tag 'user[permission_level]', 
+                          options_for_select([
+                            ['一般', 'general'],
+                            ['管理者', 'administrator']
+                          ], @current_permission_level), 
+                          class: "form-select", 
+                          required: true %>
+            <div class="form-text">
+              <strong>管理者:</strong> スタッフの登録・編集が可能<br>
+              <strong>一般:</strong> スタッフの閲覧のみ可能
+            </div>
+          </div>
+
+          <div class="alert alert-warning">
+            <strong>注意:</strong> パスワードは変更できません。スタッフ本人が「パスワードを忘れた」機能から変更する必要があります。
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "キャンセル", medical_staff_staff_path(@staff_member), class: "btn btn-secondary" %>
+            <%= f.submit "更新", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= link_to "← スタッフ詳細に戻る", medical_staff_staff_path(@staff_member), class: "btn btn-link" %>
+    </div>
+  </div>
+</div>

@@ -28,6 +28,27 @@ class User < ApplicationRecord
 
   # アソシエーション
   has_many :blood_pressure_records, dependent: :destroy
+  has_many :user_hospital_roles, dependent: :destroy
+  has_many :hospitals, through: :user_hospital_roles
+  has_many :roles, through: :user_hospital_roles
+  
+  # 患者としての担当スタッフ関連
+  has_many :patient_staff_assignments_as_patient, 
+           class_name: 'PatientStaffAssignment', 
+           foreign_key: 'patient_id', 
+           dependent: :destroy
+  has_many :assigned_staff, 
+           through: :patient_staff_assignments_as_patient, 
+           source: :staff
+  
+  # スタッフとしての担当患者関連
+  has_many :patient_staff_assignments_as_staff, 
+           class_name: 'PatientStaffAssignment', 
+           foreign_key: 'staff_id', 
+           dependent: :destroy
+  has_many :assigned_patients, 
+           through: :patient_staff_assignments_as_staff, 
+           source: :patient
 
   # バリデーション
   validates :name, presence: true, length: { maximum: 50 }
@@ -45,6 +66,59 @@ class User < ApplicationRecord
   
   def email_changed?
     false
+  end
+  
+  # メソッド
+  def medical_staff?
+    user_hospital_roles.joins(:role).where(roles: { is_medical_staff: true }).exists?
+  end
+  
+  def patient?
+    user_hospital_roles.joins(:role).where(roles: { is_medical_staff: false }).exists?
+  end
+  
+  def hospitals_as_staff
+    hospitals.joins(:user_hospital_roles).merge(
+      UserHospitalRole.joins(:role).merge(Role.medical_staff)
+    ).where(user_hospital_roles: { user_id: id }).distinct
+  end
+  
+  def hospitals_as_patient
+    hospitals.joins(:user_hospital_roles).merge(
+      UserHospitalRole.joins(:role).merge(Role.patients)
+    ).where(user_hospital_roles: { user_id: id }).distinct
+  end
+  
+  # 特定の病院での管理者権限チェック
+  def administrator_at?(hospital)
+    user_hospital_roles
+      .joins(:role)
+      .where(hospital_id: hospital.id, roles: { is_medical_staff: true })
+      .permission_level_administrator
+      .exists?
+  end
+  
+  # いずれかの病院で管理者権限を持っているかチェック
+  def administrator?
+    user_hospital_roles
+      .joins(:role)
+      .where(roles: { is_medical_staff: true })
+      .permission_level_administrator
+      .exists?
+  end
+  
+  # 特定の病院での担当スタッフを取得
+  def assigned_staff_at(hospital)
+    assigned_staff.joins(:user_hospital_roles)
+      .where(user_hospital_roles: { hospital_id: hospital.id })
+      .distinct
+  end
+  
+  # 特定の病院での担当患者を取得
+  def assigned_patients_at(hospital)
+    assigned_patients.joins(:user_hospital_roles)
+      .where(user_hospital_roles: { hospital_id: hospital.id })
+      .distinct
   end
   
   private

@@ -1,0 +1,2 @@
+module MedicalStaff::StaffHelper
+end

@@ -1,0 +1,150 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2">患者一覧</h1>
+  <%= link_to "患者を追加", new_medical_staff_patient_path, class: "btn btn-primary" %>
+</div>
+
+<!-- 検索・フィルターフォーム -->
+<div class="card mb-3">
+  <div class="card-body">
+    <%= form_with url: medical_staff_patients_path, method: :get, local: true do |f| %>
+      <div class="row g-2">
+        <div class="col-12 col-md-5">
+          <%= f.text_field :search, 
+                          value: params[:search], 
+                          placeholder: "患者名で検索", 
+                          class: "form-control" %>
+        </div>
+        <div class="col-12 col-md-4">
+          <%= f.select :assignment, 
+                      [
+                        ['全ての患者', ''],
+                        ['自分の担当患者', 'assigned'],
+                        ['担当していない患者', 'unassigned']
+                      ],
+                      { selected: params[:assignment] },
+                      class: "form-select" %>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="d-flex gap-2">
+            <%= f.submit "検索", class: "btn btn-primary flex-fill" %>
+            <%= link_to "クリア", medical_staff_patients_path, class: "btn btn-secondary flex-fill" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">病院: <%= @hospital.name %></h5>
+    <p class="text-muted mb-0">
+      表示中の患者数: <strong><%= @patients.count %></strong>人
+      <% if params[:search].present? || params[:assignment].present? %>
+        <span class="text-info ms-2">
+          (
+          <% if params[:search].present? %>
+            検索: "<%= params[:search] %>"
+          <% end %>
+          <% if params[:assignment].present? %>
+            <%= params[:assignment] == 'assigned' ? '自分の担当患者のみ' : '担当していない患者のみ' %>
+          <% end %>
+          )
+        </span>
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <% if @patients.any? %>
+    <% @patients.each do |patient| %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title"><%= patient.name %></h5>
+            <p class="card-text">
+              <strong>ユーザーID:</strong> <%= patient.user_id %><br>
+              <strong>メールアドレス:</strong><br>
+              <%= patient.email %>
+            </p>
+            <hr>
+            
+            <!-- 担当スタッフセクション -->
+            <div class="mb-3">
+              <strong class="text-muted">担当スタッフ:</strong>
+              <div class="mt-2">
+                <% assigned_staff = patient.assigned_staff_at(@hospital) %>
+                <% if assigned_staff.any? %>
+                  <% assigned_staff.each do |staff| %>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="badge bg-info me-1"><%= staff.name %></span>
+                      <%= button_to "×", medical_staff_patient_unassign_staff_path(patient, staff), 
+                                    method: :delete,
+                                    class: "btn btn-sm btn-outline-danger py-0 px-1",
+                                    style: "line-height: 1;",
+                                    data: { turbo_confirm: "#{staff.name}を担当から解除しますか？" } %>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <span class="text-muted small">未設定</span>
+                <% end %>
+              </div>
+              
+              <!-- 担当スタッフ追加フォーム -->
+              <%= form_with url: medical_staff_patient_assign_staff_path(patient), method: :post, class: "mt-2" do |f| %>
+                <div class="input-group input-group-sm">
+                  <%= select_tag :staff_id, 
+                                options_for_select(
+                                  @staff_members.where.not(id: assigned_staff.pluck(:id)).map { |s| [s.name, s.id] },
+                                  nil
+                                ),
+                                class: "form-select form-select-sm",
+                                prompt: "スタッフを選択" %>
+                  <%= f.submit "追加", class: "btn btn-primary btn-sm" %>
+                </div>
+              <% end %>
+            </div>
+            
+            <hr>
+            
+            <div class="row text-center">
+              <div class="col-6">
+                <h6 class="text-primary"><%= patient.blood_pressure_records.count %></h6>
+                <small class="text-muted">総記録数</small>
+              </div>
+              <div class="col-6">
+                <% if patient.blood_pressure_records.any? %>
+                  <h6 class="text-success">
+                    <%= time_ago_in_words(patient.blood_pressure_records.recent.first.measured_at) %>前
+                  </h6>
+                  <small class="text-muted">最終記録</small>
+                <% else %>
+                  <h6 class="text-muted">-</h6>
+                  <small class="text-muted">記録なし</small>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <div class="d-flex gap-2">
+              <%= link_to "詳細・血圧記録", medical_staff_patient_path(patient), class: "btn btn-info btn-sm flex-fill" %>
+              <%= link_to "編集", edit_medical_staff_patient_path(patient), class: "btn btn-warning btn-sm flex-fill" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="col-12">
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">まだ患者が登録されていません。</p>
+        <%= link_to "最初の患者を登録", new_medical_staff_patient_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="mt-4">
+  <%= link_to "← ダッシュボードに戻る", medical_staff_root_path, class: "btn btn-secondary" %>
+</div>

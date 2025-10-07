@@ -1,0 +1,85 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h1 class="h2 mb-4">患者登録</h1>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">新規患者情報入力</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with(model: @patient, url: medical_staff_patients_path, local: true) do |f| %>
+          <% if @patient.errors.any? %>
+            <div class="alert alert-danger">
+              <h4><%= pluralize(@patient.errors.count, "個のエラー") %>が発生しました:</h4>
+              <ul class="mb-0">
+                <% @patient.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :name, "患者名", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", placeholder: "例: 山田太郎", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, "メールアドレス", class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", placeholder: "例: patient@example.com", required: true %>
+            <div class="form-text">患者がログインする際に使用します（必須）</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password, "初期パスワード", class: "form-label" %>
+            <%= f.password_field :password, class: "form-control", placeholder: "8文字以上", required: true %>
+            <div class="form-text">患者に初期パスワードを伝えてください</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password_confirmation, "パスワード（確認）", class: "form-label" %>
+            <%= f.password_field :password_confirmation, class: "form-control", placeholder: "8文字以上", required: true %>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="form-label"><strong>担当スタッフ</strong></label>
+            <div class="form-text mb-2">この患者の担当スタッフを選択してください（複数選択可）</div>
+            <% @staff_members.each do |staff| %>
+              <div class="form-check">
+                <%= check_box_tag 'staff_ids[]', staff.id, false, 
+                                  id: "staff_#{staff.id}", 
+                                  class: "form-check-input" %>
+                <%= label_tag "staff_#{staff.id}", staff.name, class: "form-check-label" %>
+                <% staff_role = staff.user_hospital_roles.joins(:role).where(hospital_id: @hospital.id, roles: { is_medical_staff: true }).first %>
+                <% if staff_role %>
+                  <span class="badge bg-secondary ms-2"><%= staff_role.role_name %></span>
+                <% end %>
+              </div>
+            <% end %>
+            <% if @staff_members.empty? %>
+              <p class="text-muted">担当可能なスタッフがいません。</p>
+            <% end %>
+          </div>
+
+          <hr>
+
+          <div class="alert alert-info">
+            <strong>注意事項:</strong>
+            <ul class="mb-0">
+              <li>ユーザーIDは自動で生成されます（7桁の数字）</li>
+              <li>患者は「<%= @hospital.name %>」に自動的に登録されます</li>
+              <li>役割は「患者」として登録されます</li>
+            </ul>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "キャンセル", medical_staff_patients_path, class: "btn btn-secondary" %>
+            <%= f.submit "登録", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

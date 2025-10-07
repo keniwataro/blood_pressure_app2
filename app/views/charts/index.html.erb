@@ -4,15 +4,15 @@
 </div>
 
 <!-- 期間選択 -->
-<div class="card mb-4">
+<div id="chart-section" class="card mb-4">
   <div class="card-body">
     <h5 class="card-title mb-3">表示期間</h5>
     <div class="d-flex gap-2 flex-wrap">
-      <%= link_to "全て", charts_path(period: 'all'), 
+      <%= link_to "全て", charts_path(period: 'all', anchor: 'chart-section'), 
                   class: "btn flex-fill #{'btn-primary' if @period == 'all'} #{'btn-outline-primary' if @period != 'all'}" %>
-      <%= link_to "1ヶ月", charts_path(period: 'month'), 
+      <%= link_to "1ヶ月", charts_path(period: 'month', anchor: 'chart-section'), 
                   class: "btn flex-fill #{'btn-success' if @period == 'month'} #{'btn-outline-success' if @period != 'month'}" %>
-      <%= link_to "1週間", charts_path(period: 'week'), 
+      <%= link_to "1週間", charts_path(period: 'week', anchor: 'chart-section'), 
                   class: "btn flex-fill #{'btn-info' if @period == 'week'} #{'btn-outline-info' if @period != 'week'}" %>
     </div>
   </div>
@@ -25,7 +25,7 @@
       <!-- 月選択セレクトボックス -->
       <div class="row mb-3">
         <div class="col-md-6 mx-auto">
-          <%= form_with url: charts_path, method: :get, local: true, class: "row g-2" do |f| %>
+          <%= form_with url: charts_path(anchor: 'chart-section'), method: :get, local: true, class: "row g-2" do |f| %>
             <%= f.hidden_field :period, value: 'month' %>
             <div class="col-5">
               <%= f.select :year, 
@@ -50,7 +50,7 @@
       <div class="d-flex justify-content-center align-items-center gap-2">
         <% prev_month = @month == 1 ? 12 : @month - 1 %>
         <% prev_year = @month == 1 ? @year - 1 : @year %>
-        <%= link_to "← 前月", charts_path(period: 'month', year: prev_year, month: prev_month), 
+        <%= link_to "← 前月", charts_path(period: 'month', year: prev_year, month: prev_month, anchor: 'chart-section'),
                     class: "btn btn-sm btn-outline-secondary" %>
         
         <div class="text-center px-3">
@@ -64,7 +64,7 @@
         
         <% next_month = @month == 12 ? 1 : @month + 1 %>
         <% next_year = @month == 12 ? @year + 1 : @year %>
-        <%= link_to "次月 →", charts_path(period: 'month', year: next_year, month: next_month), 
+        <%= link_to "次月 →", charts_path(period: 'month', year: next_year, month: next_month, anchor: 'chart-section'),
                     class: "btn btn-sm btn-outline-secondary #{'disabled' if @is_current_month}",
                     disabled: @is_current_month %>
       </div>
@@ -76,7 +76,7 @@
       <!-- 週選択セレクトボックス -->
       <div class="row mb-3">
         <div class="col-md-6 mx-auto">
-          <%= form_with url: charts_path, method: :get, local: true, class: "row g-2" do |f| %>
+          <%= form_with url: charts_path(anchor: 'chart-section'), method: :get, local: true, class: "row g-2" do |f| %>
             <%= f.hidden_field :period, value: 'week' %>
             <div class="col-10">
               <%= f.select :week_offset,
@@ -102,7 +102,7 @@
       
       <!-- 前週・次週ナビゲーション -->
       <div class="d-flex justify-content-center align-items-center gap-2">
-        <%= link_to "← 前週", charts_path(period: 'week', week_offset: @week_offset - 1), 
+        <%= link_to "← 前週", charts_path(period: 'week', week_offset: @week_offset - 1, anchor: 'chart-section'),
                     class: "btn btn-sm btn-outline-secondary" %>
         
         <div class="text-center px-3">
@@ -111,7 +111,7 @@
           </h5>
         </div>
         
-        <%= link_to "次週 →", charts_path(period: 'week', week_offset: @week_offset + 1), 
+        <%= link_to "次週 →", charts_path(period: 'week', week_offset: @week_offset + 1, anchor: 'chart-section'),
                     class: "btn btn-sm btn-outline-secondary #{'disabled' if @is_current_week}",
                     disabled: @is_current_week %>
       </div>
