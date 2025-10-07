@@ -1,7 +1,7 @@
-# Be sure to restart your server when you modify this file.
+# このファイルを変更したら、必ずサーバーを再起動してください。
 
-# Define an application-wide HTTP permissions policy. For further
-# information see: https://developers.google.com/web/updates/2018/06/feature-policy
+# アプリケーション全体のHTTP権限ポリシーを定義します。詳細については
+# 以下を参照してください：https://developers.google.com/web/updates/2018/06/feature-policy
 
 # Rails.application.config.permissions_policy do |policy|
 #   policy.camera      :none

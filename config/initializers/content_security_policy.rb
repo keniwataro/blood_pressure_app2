@@ -1,7 +1,7 @@
-# Be sure to restart your server when you modify this file.
+# このファイルを変更したら、必ずサーバーを再起動してください。
 
-# Define an application-wide content security policy.
-# See the Securing Rails Applications Guide for more information:
+# アプリケーション全体のコンテンツセキュリティポリシーを定義します。
+# 詳細については、Railsアプリケーションのセキュリティガイドを参照してください：
 # https://guides.rubyonrails.org/security.html#content-security-policy-header
 
 # Rails.application.configure do
@@ -12,14 +12,14 @@
 #     policy.object_src  :none
 #     policy.script_src  :self, :https
 #     policy.style_src   :self, :https
-#     # Specify URI for violation reports
+#     # 違反レポートのURIを指定
 #     # policy.report_uri "/csp-violation-report-endpoint"
 #   end
 #
-#   # Generate session nonces for permitted importmap, inline scripts, and inline styles.
+#   # 許可されたimportmap、インラインスクリプト、インラインスタイルのセッションノンスを生成します。
 #   config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
 #   config.content_security_policy_nonce_directives = %w(script-src style-src)
 #
-#   # Report violations without enforcing the policy.
+#   # ポリシーを強制せずに違反をレポートします。
 #   # config.content_security_policy_report_only = true
 # end

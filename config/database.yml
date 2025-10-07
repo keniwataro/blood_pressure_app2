@@ -1,21 +1,21 @@
-# PostgreSQL. Versions 9.3 and up are supported.
+# PostgreSQL。バージョン9.3以上がサポートされます。
 #
-# Install the pg driver:
+# pgドライバーのインストール：
 #   gem install pg
-# On macOS with Homebrew:
+# macOS with Homebrewの場合：
 #   gem install pg -- --with-pg-config=/usr/local/bin/pg_config
-# On Windows:
+# Windowsの場合：
 #   gem install pg
-#       Choose the win32 build.
-#       Install PostgreSQL and put its /bin directory on your path.
+#       win32ビルドを選択してください。
+#       PostgreSQLをインストールし、その/binディレクトリをパスに追加してください。
 #
-# Configure Using Gemfile
+# Gemfileを使用して設定
 # gem "pg"
 #
 default: &default
   adapter: postgresql
   encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
+  # 接続プーリングの詳細については、Rails設定ガイドを参照してください
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 

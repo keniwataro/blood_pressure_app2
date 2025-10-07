@@ -1,69 +1,65 @@
 require 'simplecov'
 
-# This file is copied to spec/ when you run 'rails generate rspec:install'
+# このファイルは'rails generate rspec:install'を実行するとspec/にコピーされます
 require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
-# Prevent database truncation if the environment is production
+# 環境が本番環境の場合、データベースの切り詰めを防止します
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require 'rspec/rails'
-# Add additional requires below this line. Rails is not loaded until this point!
+# この行の下に追加のrequireを追加してください。この時点までRailsは読み込まれていません！
 
-# Requires supporting ruby files with custom matchers and macros, etc, in
-# spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
-# run as spec files by default. This means that files in spec/support that end
-# in _spec.rb will both be required and run as specs, causing the specs to be
-# run twice. It is recommended that you do not name files matching this glob to
-# end with _spec.rb. You can configure this pattern with the --pattern
-# option on the command line or in ~/.rspec, .rspec or `.rspec-local`.
+# spec/support/ およびそのサブディレクトリ内のカスタムマッチャー、マクロなどを含む
+# サポート用のRubyファイルを必要とします。デフォルトでは`spec/**/*_spec.rb`に一致する
+# ファイルはspecファイルとして実行されます。つまり、spec/support内の_spec.rbで終わる
+# ファイルはrequireされると同時にspecとしても実行され、specが2回実行される原因となります。
+# このglobに一致するファイルを_spec.rbで終わる名前にしないことを推奨します。
+# このパターンはコマンドラインの--patternオプションまたは~/.rspec、.rspec、.rspec-localで設定できます。
 #
-# The following line is provided for convenience purposes. It has the downside
-# of increasing the boot-up time by auto-requiring all files in the support
-# directory. Alternatively, in the individual `*_spec.rb` files, manually
-# require only the support files necessary.
+# 以下の行は利便性のために提供されますが、supportディレクトリ内のすべてのファイルを
+# 自動requireすることで起動時間を増加させる欠点があります。
+# あるいは、個別の`*_spec.rb`ファイルで、必要なサポートファイルのみを手動でrequireしてください。
 #
 # Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
 
-# Checks for pending migrations and applies them before tests are run.
-# If you are not using ActiveRecord, you can remove these lines.
+# 保留中のマイグレーションをチェックし、テスト実行前に適用します。
+# ActiveRecordを使用していない場合は、これらの行を削除できます。
 begin
   ActiveRecord::Migration.maintain_test_schema!
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 RSpec.configure do |config|
-  # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
+  # ActiveRecordまたはActiveRecord fixturesを使用していない場合は、この行を削除してください
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
-  # If you're not using ActiveRecord, or you'd prefer not to run each of your
-  # examples within a transaction, remove the following line or assign false
-  # instead of true.
+  # ActiveRecordを使用していない場合、または各exampleをトランザクション内で実行したくない場合、
+  # 以下の行を削除するか、trueの代わりにfalseを代入してください。
   config.use_transactional_fixtures = true
 
-  # You can uncomment this line to turn off ActiveRecord support entirely.
+  # ActiveRecordサポートを完全に無効にするには、この行のコメントを解除してください。
   # config.use_active_record = false
 
-  # RSpec Rails can automatically mix in different behaviours to your tests
-  # based on their file location, for example enabling you to call `get` and
-  # `post` in specs under `spec/controllers`.
+  # RSpec Railsはファイルの場所に基づいて自動的に異なる動作をテストにミックスインできます。
+  # 例えば、`spec/controllers`以下のspecで`get`や`post`を呼び出せるようにします。
   #
-  # You can disable this behaviour by removing the line below, and instead
-  # explicitly tag your specs with their type, e.g.:
+  # この動作を無効にするには以下の行を削除し、代わりにspecに明示的にタイプをタグ付けしてください。
+  # 例:
   #
   #     RSpec.describe UsersController, type: :controller do
   #       # ...
   #     end
   #
-  # The different available types are documented in the features, such as in
+  # 利用可能なさまざまなタイプは機能で文書化されています。例えば：
   # https://rspec.info/features/6-0/rspec-rails
   config.infer_spec_type_from_file_location!
 
-  # Filter lines from Rails gems in backtraces.
+  # Rails gemからの行をバックトレースからフィルタリングします。
   config.filter_rails_from_backtrace!
-  # arbitrary gems may also be filtered via:
+  # 任意のgemも以下でフィルタリングできます：
   # config.filter_gems_from_backtrace("gem name")
 
-  # Factory Bot configuration
+  # Factory Bot設定
   config.include FactoryBot::Syntax::Methods
 
 end

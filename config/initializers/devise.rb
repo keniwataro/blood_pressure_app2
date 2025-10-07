@@ -1,281 +1,249 @@
 # frozen_string_literal: true
 
-# Assuming you have not yet modified this file, each configuration option below
-# is set to its default value. Note that some are commented out while others
-# are not: uncommented lines are intended to protect your configuration from
-# breaking changes in upgrades (i.e., in the event that future versions of
-# Devise change the default values for those options).
+# このファイルをまだ変更していない場合、以下の各設定オプションはデフォルト値に設定されています。
+# 一部のオプションはコメントアウトされており、一部はコメントアウトされていないことに注意してください。
+# コメントアウトされていない行は、アップグレード時に設定が破壊的な変更から保護することを目的としています。
+# （つまり、将来のDeviseバージョンでデフォルト値が変更された場合に備えて）。
 #
-# Use this hook to configure devise mailer, warden hooks and so forth.
-# Many of these configuration options can be set straight in your model.
+# このフックを使用してdevise mailer、warden hooksなどを設定します。
+# これらの設定オプションの多くは、モデルで直接設定することができます。
 Devise.setup do |config|
-  # The secret key used by Devise. Devise uses this key to generate
-  # random tokens. Changing this key will render invalid all existing
-  # confirmation, reset password and unlock tokens in the database.
-  # Devise will use the `secret_key_base` as its `secret_key`
-  # by default. You can change it below and use your own secret key.
+  # Deviseが使用する秘密鍵。Deviseはこの鍵を使用してランダムなトークンを生成します。
+  # この鍵を変更すると、データベース内の既存の確認、パスワードリセット、アンロックトークンがすべて無効になります。
+  # Deviseはデフォルトで`secret_key_base`を`secret_key`として使用します。
+  # 以下で変更して独自の秘密鍵を使用することができます。
   # config.secret_key = '0dfff569ba3dc71e11dfb4d624814aad219dc96a8f752a922307df262cbdd20a99d9c9471d58847ce87c008a5abdfbd583e70f051cf5179acab9f2d2c3f81703'
 
   # ==> Controller configuration
-  # Configure the parent class to the devise controllers.
+  # deviseコントローラの親クラスを設定します。
   # config.parent_controller = 'DeviseController'
 
   # ==> Mailer Configuration
-  # Configure the e-mail address which will be shown in Devise::Mailer,
-  # note that it will be overwritten if you use your own mailer class
-  # with default "from" parameter.
+  # Devise::Mailerで表示されるメールアドレスを設定します。
+  # 独自のmailerクラスを使用する場合、デフォルトの"from"パラメータで上書きされることに注意してください。
   config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
 
-  # Configure the class responsible to send e-mails.
+  # メール送信を担当するクラスを設定します。
   # config.mailer = 'Devise::Mailer'
 
-  # Configure the parent class responsible to send e-mails.
+  # メール送信を担当する親クラスを設定します。
   # config.parent_mailer = 'ActionMailer::Base'
 
   # ==> ORM configuration
-  # Load and configure the ORM. Supports :active_record (default) and
-  # :mongoid (bson_ext recommended) by default. Other ORMs may be
-  # available as additional gems.
+  # ORMをロードして設定します。デフォルトで:active_recordと:mongoid（bson_ext推奨）をサポートします。
+  # その他のORMは追加のgemとして利用可能かもしれません。
   require 'devise/orm/active_record'
 
   # ==> Configuration for any authentication mechanism
-  # Configure which keys are used when authenticating a user. The default is
-  # just :email. You can configure it to use [:username, :subdomain], so for
-  # authenticating a user, both parameters are required. Remember that those
-  # parameters are used only when authenticating and not when retrieving from
-  # session. If you need permissions, you should implement that in a before filter.
-  # You can also supply a hash where the value is a boolean determining whether
-  # or not authentication should be aborted when the value is not present.
+  # ユーザー認証時に使用するキーを設定します。デフォルトは:emailのみです。
+  # [:username, :subdomain]を使用するように設定すると、ユーザー認証時に両方のパラメータが必要になります。
+  # これらのパラメータは認証時にのみ使用され、セッションからの取得時には使用されないことに注意してください。
+  # パーミッションが必要な場合は、before filterで実装する必要があります。
+  # 値がブール値であるハッシュを提供することもでき、値が存在しない場合に認証を中止するかどうかを決定します。
   # config.authentication_keys = [:email]
 
-  # Configure parameters from the request object used for authentication. Each entry
-  # given should be a request method and it will automatically be passed to the
-  # find_for_authentication method and considered in your model lookup. For instance,
-  # if you set :request_keys to [:subdomain], :subdomain will be used on authentication.
-  # The same considerations mentioned for authentication_keys also apply to request_keys.
+  # 認証に使用されるリクエストオブジェクトからのパラメータを設定します。各エントリはリクエストメソッドで、
+  # 自動的にfind_for_authenticationメソッドに渡され、モデル検索で考慮されます。
+  # 例えば、:request_keysを[:subdomain]に設定すると、認証時に:subdomainが使用されます。
+  # authentication_keysで言及されたのと同じ考慮事項がrequest_keysにも適用されます。
   # config.request_keys = []
 
-  # Configure which authentication keys should be case-insensitive.
-  # These keys will be downcased upon creating or modifying a user and when used
-  # to authenticate or find a user. Default is :email.
+  # 認証キーを大文字小文字を区別しないように設定します。
+  # これらのキーはユーザー作成・変更時、および認証・検索時に小文字化されます。デフォルトは:emailです。
   config.case_insensitive_keys = [:email]
 
-  # Configure which authentication keys should have whitespace stripped.
-  # These keys will have whitespace before and after removed upon creating or
-  # modifying a user and when used to authenticate or find a user. Default is :email.
+  # 認証キーの前後の空白を除去するように設定します。
+  # これらのキーはユーザー作成・変更時、および認証・検索時に前後の空白が除去されます。デフォルトは:emailです。
   config.strip_whitespace_keys = [:email]
 
-  # Tell if authentication through request.params is enabled. True by default.
-  # It can be set to an array that will enable params authentication only for the
-  # given strategies, for example, `config.params_authenticatable = [:database]` will
-  # enable it only for database (email + password) authentication.
+  # リクエスト.paramsを通じた認証が有効かどうかを設定します。デフォルトはtrueです。
+  # 指定されたストラテジーのみでparams認証を有効にする配列に設定することができます。
+  # 例えば、`config.params_authenticatable = [:database]`とすると、データベース認証でのみ有効になります。
   # config.params_authenticatable = true
 
-  # Tell if authentication through HTTP Auth is enabled. False by default.
-  # It can be set to an array that will enable http authentication only for the
-  # given strategies, for example, `config.http_authenticatable = [:database]` will
-  # enable it only for database authentication.
-  # For API-only applications to support authentication "out-of-the-box", you will likely want to
-  # enable this with :database unless you are using a custom strategy.
-  # The supported strategies are:
-  # :database      = Support basic authentication with authentication key + password
+  # HTTP Authを通じた認証が有効かどうかを設定します。デフォルトはfalseです。
+  # 指定されたストラテジーのみでhttp認証を有効にする配列に設定することができます。
+  # 例えば、`config.http_authenticatable = [:database]`とすると、データベース認証でのみ有効になります。
+  # API専用アプリケーションで認証を「すぐに利用可能」にする場合、カスタムストラテジーを使用しない限り:databaseを有効にすることを推奨します。
+  # サポートされるストラテジーは以下の通りです：
+  # :database      = 認証キー + パスワードによる基本認証をサポート
   # config.http_authenticatable = false
 
-  # If 401 status code should be returned for AJAX requests. True by default.
+  # AJAXリクエストに対して401ステータスコードを返すかどうかを設定します。デフォルトはtrueです。
   # config.http_authenticatable_on_xhr = true
 
-  # The realm used in Http Basic Authentication. 'Application' by default.
+  # Http Basic Authenticationで使用されるrealm。デフォルトは'Application'です。
   # config.http_authentication_realm = 'Application'
 
-  # It will change confirmation, password recovery and other workflows
-  # to behave the same regardless if the e-mail provided was right or wrong.
-  # Does not affect registerable.
+  # 確認、パスワード回復、その他のワークフローを、提供されたメールが正しいか間違っているかに関係なく同じように動作させます。
+  # registerableには影響しません。
   # config.paranoid = true
 
-  # By default Devise will store the user in session. You can skip storage for
-  # particular strategies by setting this option.
-  # Notice that if you are skipping storage for all authentication paths, you
-  # may want to disable generating routes to Devise's sessions controller by
-  # passing skip: :sessions to `devise_for` in your config/routes.rb
+  # デフォルトでDeviseはユーザーをセッションに保存します。このオプションを設定することで、
+  # 特定のストラテジーに対して保存をスキップすることができます。
+  # すべての認証パスで保存をスキップする場合、config/routes.rbの`devise_for`で
+  # skip: :sessionsを渡してDeviseのsessionsコントローラへのルート生成を無効にすることを検討してください。
   config.skip_session_storage = [:http_auth]
 
-  # By default, Devise cleans up the CSRF token on authentication to
-  # avoid CSRF token fixation attacks. This means that, when using AJAX
-  # requests for sign in and sign up, you need to get a new CSRF token
-  # from the server. You can disable this option at your own risk.
+  # デフォルトでDeviseは認証時にCSRFトークンをクリーンアップして、
+  # CSRFトークン固定攻撃を防ぎます。つまり、AJAXリクエストを使用してサインイン・サインアップする場合、
+  # サーバーから新しいCSRFトークンを取得する必要があります。このオプションは自己責任で無効にすることができます。
   # config.clean_up_csrf_token_on_authentication = true
 
-  # When false, Devise will not attempt to reload routes on eager load.
-  # This can reduce the time taken to boot the app but if your application
-  # requires the Devise mappings to be loaded during boot time the application
-  # won't boot properly.
+  # falseの場合、Deviseはeager load時にルートのリロードを試みません。
+  # これによりアプリの起動時間を短縮できますが、アプリケーションが起動時にDeviseマッピングをロードする必要がある場合、
+  # アプリケーションが正しく起動しません。
   # config.reload_routes = true
 
   # ==> Configuration for :database_authenticatable
-  # For bcrypt, this is the cost for hashing the password and defaults to 12. If
-  # using other algorithms, it sets how many times you want the password to be hashed.
-  # The number of stretches used for generating the hashed password are stored
-  # with the hashed password. This allows you to change the stretches without
-  # invalidating existing passwords.
+  # bcryptの場合、これはパスワードのハッシュ化コストで、デフォルトは12です。
+  # 他のアルゴリズムを使用する場合、パスワードをハッシュ化する回数を設定します。
+  # ハッシュ化されたパスワードで使用されるストレッチ回数は、ハッシュ化されたパスワードとともに保存されます。
+  # これにより、既存のパスワードを無効化せずにストレッチ回数を変更することができます。
   #
-  # Limiting the stretches to just one in testing will increase the performance of
-  # your test suite dramatically. However, it is STRONGLY RECOMMENDED to not use
-  # a value less than 10 in other environments. Note that, for bcrypt (the default
-  # algorithm), the cost increases exponentially with the number of stretches (e.g.
-  # a value of 20 is already extremely slow: approx. 60 seconds for 1 calculation).
+  # テストではストレッチを1に制限すると、テストスイートの性能が劇的に向上します。
+  # ただし、他の環境では10未満の値を使用しないことを強く推奨します。
+  # bcrypt（デフォルトアルゴリズム）の場合、コストはストレッチ回数に応じて指数関数的に増加します
+  # （例: 20の値はすでに非常に遅く、1回の計算で約60秒かかります）。
   config.stretches = Rails.env.test? ? 1 : 12
 
-  # Set up a pepper to generate the hashed password.
+  # ハッシュ化されたパスワードを生成するためのpepperを設定します。
   # config.pepper = '250765b481e3daa3f3dea0484f008ed180bf85e7585a6f9cb1b745655845b52f5ddcb526f2837c840419b1fe11b295d0015459140810de742e7e2fee68f7eb2a'
 
-  # Send a notification to the original email when the user's email is changed.
+  # ユーザーのメールアドレスが変更されたときに元のメールアドレスに通知を送信します。
   # config.send_email_changed_notification = false
 
-  # Send a notification email when the user's password is changed.
+  # ユーザーのパスワードが変更されたときに通知メールを送信します。
   # config.send_password_change_notification = false
 
   # ==> Configuration for :confirmable
-  # A period that the user is allowed to access the website even without
-  # confirming their account. For instance, if set to 2.days, the user will be
-  # able to access the website for two days without confirming their account,
-  # access will be blocked just in the third day.
-  # You can also set it to nil, which will allow the user to access the website
-  # without confirming their account.
-  # Default is 0.days, meaning the user cannot access the website without
-  # confirming their account.
+  # ユーザーがアカウントを確認せずにウェブサイトにアクセスできる期間。
+  # 例えば、2.daysに設定すると、ユーザーはアカウントを確認せずに2日間ウェブサイトにアクセスできますが、
+  # 3日目にはアクセスがブロックされます。
+  # nilに設定することもでき、その場合ユーザーはアカウントを確認せずにウェブサイトにアクセスできます。
+  # デフォルトは0.daysで、ユーザーはアカウントを確認せずにウェブサイトにアクセスできません。
   # config.allow_unconfirmed_access_for = 2.days
 
-  # A period that the user is allowed to confirm their account before their
-  # token becomes invalid. For example, if set to 3.days, the user can confirm
-  # their account within 3 days after the mail was sent, but on the fourth day
-  # their account can't be confirmed with the token any more.
-  # Default is nil, meaning there is no restriction on how long a user can take
-  # before confirming their account.
+  # ユーザーがアカウントを確認できる期間。その期間が過ぎるとトークンが無効になります。
+  # 例えば、3.daysに設定すると、メール送信後3日以内にアカウントを確認できますが、
+  # 4日目にはトークンではアカウントを確認できなくなります。
+  # デフォルトはnilで、ユーザーがアカウントを確認するのに制限時間はありません。
   # config.confirm_within = 3.days
 
-  # If true, requires any email changes to be confirmed (exactly the same way as
-  # initial account confirmation) to be applied. Requires additional unconfirmed_email
-  # db field (see migrations). Until confirmed, new email is stored in
-  # unconfirmed_email column, and copied to email column on successful confirmation.
+  # trueの場合、メールアドレスの変更を（初期アカウント確認とまったく同じ方法で）確認する必要があります。
+  # 追加のunconfirmed_emailデータベースフィールドが必要です（マイグレーションを参照）。
+  # 確認されるまで、新しいメールアドレスはunconfirmed_emailカラムに保存され、確認成功時にemailカラムにコピーされます。
   config.reconfirmable = true
 
-  # Defines which key will be used when confirming an account
+  # アカウント確認時に使用するキーを定義します。
   # config.confirmation_keys = [:email]
 
   # ==> Configuration for :rememberable
-  # The time the user will be remembered without asking for credentials again.
+  # ユーザーが再び資格情報を求められることなく記憶される時間。
   # config.remember_for = 2.weeks
 
-  # Invalidates all the remember me tokens when the user signs out.
+  # ユーザーがサインアウトしたときにすべてのremember meトークンを無効化します。
   config.expire_all_remember_me_on_sign_out = true
 
-  # If true, extends the user's remember period when remembered via cookie.
+  # trueの場合、cookie経由で記憶されたときにユーザーの記憶期間を延長します。
   # config.extend_remember_period = false
 
-  # Options to be passed to the created cookie. For instance, you can set
-  # secure: true in order to force SSL only cookies.
+  # 作成されたcookieに渡されるオプション。例えば、secure: trueを設定してSSL専用cookieを強制できます。
   # config.rememberable_options = {}
 
   # ==> Configuration for :validatable
-  # Range for password length.
+  # パスワードの長さの範囲。
   config.password_length = 6..128
 
-  # Email regex used to validate email formats. It simply asserts that
-  # one (and only one) @ exists in the given string. This is mainly
-  # to give user feedback and not to assert the e-mail validity.
+  # メールアドレスの形式を検証するための正規表現。文字列に@が1つだけ存在することを単純に確認します。
+  # これは主にユーザーにフィードバックを与えるためのもので、メールアドレスの有効性を確認するものではありません。
   config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
 
   # ==> Configuration for :timeoutable
-  # The time you want to timeout the user session without activity. After this
-  # time the user will be asked for credentials again. Default is 30 minutes.
+  # アクティビティなしでユーザーセッションをタイムアウトさせる時間。この時間が経過すると、
+  # ユーザーに資格情報が再び求められます。デフォルトは30分です。
   # config.timeout_in = 30.minutes
 
   # ==> Configuration for :lockable
-  # Defines which strategy will be used to lock an account.
-  # :failed_attempts = Locks an account after a number of failed attempts to sign in.
-  # :none            = No lock strategy. You should handle locking by yourself.
+  # アカウントをロックするために使用するストラテジーを定義します。
+  # :failed_attempts = サインイン失敗回数後にアカウントをロック
+  # :none            = ロックストラテジーなし。自分でロック処理を実装する必要があります。
   # config.lock_strategy = :failed_attempts
 
-  # Defines which key will be used when locking and unlocking an account
+  # アカウントのロック・ロック解除時に使用するキーを定義します。
   # config.unlock_keys = [:email]
 
-  # Defines which strategy will be used to unlock an account.
-  # :email = Sends an unlock link to the user email
-  # :time  = Re-enables login after a certain amount of time (see :unlock_in below)
-  # :both  = Enables both strategies
-  # :none  = No unlock strategy. You should handle unlocking by yourself.
+  # アカウントのロック解除に使用するストラテジーを定義します。
+  # :email = ユーザーのメールアドレスにアンロックリンクを送信
+  # :time  = 一定時間経過後にログインを再有効化（下記の:unlock_inを参照）
+  # :both  = 両方のストラテジーを有効化
+  # :none  = アンロックストラテジーなし。自分でアンロック処理を実装する必要があります。
   # config.unlock_strategy = :both
 
-  # Number of authentication tries before locking an account if lock_strategy
-  # is failed attempts.
+  # lock_strategyがfailed attemptsの場合、アカウントをロックする前の認証試行回数。
   # config.maximum_attempts = 20
 
-  # Time interval to unlock the account if :time is enabled as unlock_strategy.
+  # unlock_strategyで:timeが有効な場合、アカウントをロック解除する時間間隔。
   # config.unlock_in = 1.hour
 
-  # Warn on the last attempt before the account is locked.
+  # アカウントがロックされる前の最後の試行で警告を表示します。
   # config.last_attempt_warning = true
 
   # ==> Configuration for :recoverable
   #
-  # Defines which key will be used when recovering the password for an account
+  # アカウントのパスワード回復時に使用するキーを定義します。
   # config.reset_password_keys = [:email]
 
-  # Time interval you can reset your password with a reset password key.
-  # Don't put a too small interval or your users won't have the time to
-  # change their passwords.
+  # パスワードリセットキーでパスワードをリセットできる時間間隔。
+  # あまり短い間隔を設定すると、ユーザーがパスワードを変更する時間がなくなります。
   config.reset_password_within = 6.hours
 
-  # When set to false, does not sign a user in automatically after their password is
-  # reset. Defaults to true, so a user is signed in automatically after a reset.
+  # falseの場合、パスワードリセット後にユーザーを自動的にサインインしません。
+  # デフォルトはtrueで、リセット後にユーザーが自動的にサインインします。
   # config.sign_in_after_reset_password = true
 
   # ==> Configuration for :encryptable
-  # Allow you to use another hashing or encryption algorithm besides bcrypt (default).
-  # You can use :sha1, :sha512 or algorithms from others authentication tools as
-  # :clearance_sha1, :authlogic_sha512 (then you should set stretches above to 20
-  # for default behavior) and :restful_authentication_sha1 (then you should set
-  # stretches to 10, and copy REST_AUTH_SITE_KEY to pepper).
+  # bcrypt（デフォルト）以外のハッシュ化または暗号化アルゴリズムを使用できるようにします。
+  # :sha1、:sha512、または他の認証ツールのアルゴリズムを使用できます。例えば、
+  # :clearance_sha1、:authlogic_sha512（この場合、上記のstretchesを20に設定）、
+  # :restful_authentication_sha1（この場合、stretchesを10に設定し、REST_AUTH_SITE_KEYをpepperにコピー）。
   #
-  # Require the `devise-encryptable` gem when using anything other than bcrypt
+  # bcrypt以外を使用する場合、`devise-encryptable` gemが必要です。
   # config.encryptor = :sha512
 
   # ==> Scopes configuration
-  # Turn scoped views on. Before rendering "sessions/new", it will first check for
-  # "users/sessions/new". It's turned off by default because it's slower if you
-  # are using only default views.
+  # スコープ付きビューをオンにします。"sessions/new"をレンダリングする前に、
+  # まず"users/sessions/new"を確認します。デフォルトのビューを使用している場合のみ遅くなるため、デフォルトでオフです。
   # config.scoped_views = false
 
-  # Configure the default scope given to Warden. By default it's the first
-  # devise role declared in your routes (usually :user).
+  # Wardenに与えられるデフォルトスコープを設定します。デフォルトではルートで宣言された最初のdeviseロール（通常:user）です。
   # config.default_scope = :user
 
-  # Set this configuration to false if you want /users/sign_out to sign out
-  # only the current scope. By default, Devise signs out all scopes.
+  # この設定をfalseにすると、/users/sign_outが現在のスコープのみをサインアウトします。
+  # デフォルトでDeviseはすべてのスコープをサインアウトします。
   # config.sign_out_all_scopes = true
 
   # ==> Navigation configuration
-  # Lists the formats that should be treated as navigational. Formats like
-  # :html should redirect to the sign in page when the user does not have
-  # access, but formats like :xml or :json, should return 401.
+  # ナビゲーションとして扱われるフォーマットをリストアップします。
+  # :htmlのようなフォーマットは、ユーザーがアクセス権を持たない場合にサインインページにリダイレクトしますが、
+  # :xmlや:jsonのようなフォーマットは401を返します。
   #
-  # If you have any extra navigational formats, like :iphone or :mobile, you
-  # should add them to the navigational formats lists.
+  # :iphoneや:mobileのような追加のナビゲーションフォーマットがある場合、
+  # ナビゲーションフォーマットリストに追加してください。
   #
-  # The "*/*" below is required to match Internet Explorer requests.
+  # 下記の"*/*"はInternet Explorerのリクエストに一致させるために必要です。
   # config.navigational_formats = ['*/*', :html, :turbo_stream]
 
-  # The default HTTP method used to sign out a resource. Default is :delete.
+  # リソースをサインアウトするために使用されるデフォルトのHTTPメソッド。デフォルトは:deleteです。
   config.sign_out_via = :delete
 
   # ==> OmniAuth
-  # Add a new OmniAuth provider. Check the wiki for more information on setting
-  # up on your models and hooks.
+  # 新しいOmniAuthプロバイダを追加します。設定方法の詳細についてはwikiを確認してください。
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
 
   # ==> Warden configuration
-  # If you want to use other strategies, that are not supported by Devise, or
-  # change the failure app, you can configure them inside the config.warden block.
+  # Deviseでサポートされていない他のストラテジーを使用する場合、またはfailure appを変更する場合、
+  # config.wardenブロック内で設定することができます。
   #
   # config.warden do |manager|
   #   manager.intercept_401 = false
@@ -283,31 +251,29 @@ Devise.setup do |config|
   # end
 
   # ==> Mountable engine configurations
-  # When using Devise inside an engine, let's call it `MyEngine`, and this engine
-  # is mountable, there are some extra configurations to be taken into account.
-  # The following options are available, assuming the engine is mounted as:
+  # engine内でDeviseを使用する場合、そのengineがマウント可能である場合、いくつかの追加設定を考慮する必要があります。
+  # engineが以下のようにマウントされていると仮定すると、以下のオプションが利用可能です：
   #
   #     mount MyEngine, at: '/my_engine'
   #
-  # The router that invoked `devise_for`, in the example above, would be:
+  # 上記の例で`devise_for`を呼び出したrouterは以下のようになります：
   # config.router_name = :my_engine
   #
-  # When using OmniAuth, Devise cannot automatically set OmniAuth path,
-  # so you need to do it manually. For the users scope, it would be:
+  # OmniAuthを使用する場合、Deviseは自動的にOmniAuthパスを設定できないため、
+  # 手動で設定する必要があります。usersスコープの場合、以下のようになります：
   # config.omniauth_path_prefix = '/my_engine/users/auth'
 
   # ==> Hotwire/Turbo configuration
-  # When using Devise with Hotwire/Turbo, the http status for error responses
-  # and some redirects must match the following. The default in Devise for existing
-  # apps is `200 OK` and `302 Found` respectively, but new apps are generated with
-  # these new defaults that match Hotwire/Turbo behavior.
-  # Note: These might become the new default in future versions of Devise.
+  # Hotwire/TurboでDeviseを使用する場合、エラーレスポンスと一部のリダイレクトのhttpステータスは
+  # 以下のものと一致する必要があります。既存のアプリでのDeviseのデフォルトは
+  # `200 OK`と`302 Found`ですが、新しいアプリはHotwire/Turboの動作に一致するこれらの新しいデフォルトで生成されます。
+  # 注意: これらは将来のDeviseバージョンで新しいデフォルトになるかもしれません。
   config.responder.error_status = :unprocessable_entity
   config.responder.redirect_status = :see_other
 
   # ==> Configuration for :registerable
 
-  # When set to false, does not sign a user in automatically after their password is
-  # changed. Defaults to true, so a user is signed in automatically after changing a password.
+  # falseの場合、パスワード変更後にユーザーを自動的にサインインしません。
+  # デフォルトはtrueで、パスワード変更後にユーザーが自動的にサインインします。
   # config.sign_in_after_change_password = true
 end

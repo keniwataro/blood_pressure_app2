@@ -1,8 +1,8 @@
-# Be sure to restart your server when you modify this file.
+# このファイルを変更したら、必ずサーバーを再起動してください。
 
-# Add new inflection rules using the following format. Inflections
-# are locale specific, and you may define rules for as many different
-# locales as you wish. All of these examples are active by default:
+# 以下の形式で新しい語形変化ルールを追加します。語形変化はロケール固有であり、
+# 必要に応じて多くの異なるロケールに対してルールを定義できます。
+# これらの例はすべてデフォルトで有効です：
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.plural /^(ox)$/i, "\\1en"
 #   inflect.singular /^(ox)en/i, "\\1"
@@ -10,7 +10,7 @@
 #   inflect.uncountable %w( fish sheep )
 # end
 
-# These inflection rules are supported but not enabled by default:
+# これらの語形変化ルールはサポートされていますが、デフォルトでは有効化されていません：
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end

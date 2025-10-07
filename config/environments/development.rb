@@ -1,24 +1,24 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
+  # ここで指定された設定は、config/application.rb の設定よりも優先されます。
 
-  # In the development environment your application's code is reloaded any time
-  # it changes. This slows down response time but is perfect for development
-  # since you don't have to restart the web server when you make code changes.
+  # 開発環境では、コードが変更されるたびにアプリケーションのコードがリロードされます。
+  # これによりレスポンスタイムが遅くなりますが、コードを変更するたびにウェブサーバーを
+  # 再起動する必要がないため、開発には最適です。
   config.enable_reloading = true
 
-  # Do not eager load code on boot.
+  # 起動時にコードをeager loadしない。
   config.eager_load = false
 
-  # Show full error reports.
+  # 完全なエラーレポートを表示します。
   config.consider_all_requests_local = true
 
-  # Enable server timing
+  # サーバータイミングを有効化
   config.server_timing = true
 
-  # Enable/disable caching. By default caching is disabled.
-  # Run rails dev:cache to toggle caching.
+  # キャッシュを有効/無効にします。デフォルトではキャッシュは無効です。
+  # rails dev:cache を実行してキャッシュを切り替えられます。
   if Rails.root.join("tmp/caching-dev.txt").exist?
     config.action_controller.perform_caching = true
     config.action_controller.enable_fragment_cache_logging = true
@@ -33,57 +33,57 @@ Rails.application.configure do
     config.cache_store = :null_store
   end
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
+  # アップロードされたファイルをローカルファイルシステムに保存します（オプションについてはconfig/storage.ymlを参照）。
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
+  # メーラーが送信できない場合でも気にしない。
   config.action_mailer.raise_delivery_errors = false
 
   config.action_mailer.perform_caching = false
 
-  # Print deprecation notices to the Rails logger.
+  # 非推奨の通知をRailsロガーに表示します。
   config.active_support.deprecation = :log
 
-  # Raise exceptions for disallowed deprecations.
+  # 許可されていない非推奨に対して例外を発生させます。
   config.active_support.disallowed_deprecation = :raise
 
-  # Tell Active Support which deprecation messages to disallow.
+  # Active Supportに許可しない非推奨メッセージを伝えます。
   config.active_support.disallowed_deprecation_warnings = []
 
-  # Raise an error on page load if there are pending migrations.
+  # 保留中のマイグレーションがある場合、ページロード時にエラーを発生させます。
   config.active_record.migration_error = :page_load
 
-  # Highlight code that triggered database queries in logs.
+  # ログ内のデータベースクエリをトリガーしたコードをハイライトします。
   config.active_record.verbose_query_logs = true
 
-  # Highlight code that enqueued background job in logs.
+  # ログ内のバックグラウンドジョブをキューイングしたコードをハイライトします。
   config.active_job.verbose_enqueue_logs = true
 
-  # Suppress logger output for asset requests.
+  # アセットリクエストのロガー出力を抑制します。
   config.assets.quiet = true
 
-  # Raises error for missing translations.
+  # 翻訳が見つからない場合にエラーを発生させます。
   # config.i18n.raise_on_missing_translations = true
 
-  # Annotate rendered view with file names.
+  # レンダリングされたビューにファイル名を注釈付けします。
   # config.action_view.annotate_rendered_view_with_filenames = true
 
-  # Uncomment if you wish to allow Action Cable access from any origin.
+  # 任意のオリジンからのAction Cableアクセスを許可したい場合はコメントを解除してください。
   # config.action_cable.disable_request_forgery_protection = true
 
-  # Raise error when a before_action's only/except options reference missing actions
+  # before_actionのonly/exceptオプションが欠落したアクションを参照する場合にエラーを発生させる
   config.action_controller.raise_on_missing_callback_actions = true
 
 
   if defined?(BetterErrors)
-    # Allow all IP addresses in development (Docker environment)
+    # 開発環境で全IPアドレスを許可（Docker環境）
     BetterErrors::Middleware.allow_ip! "0.0.0.0/0"
-    
-    # Set the application root for better file path display
+
+    # より良いファイルパスの表示のためにアプリケーションロートを設定
     BetterErrors.application_root = Rails.root.to_s
   end
 
-  # Bullet configuration for N+1 query detection
+  # N+1クエリ検出のためのBullet設定
   config.after_initialize do
     Bullet.enable = true
     Bullet.alert = false  # ブラウザのアラートを無効化
@@ -94,7 +94,7 @@ Rails.application.configure do
     Bullet.skip_html_injection = true  # HTML注入を無効化
   end
 
-  # Letter Opener configuration
+  # Letter Opener設定
   config.action_mailer.delivery_method = :letter_opener_web
   config.action_mailer.perform_deliveries = true
 
