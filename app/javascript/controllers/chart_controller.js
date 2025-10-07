@@ -61,7 +61,7 @@ export default class extends Controller {
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
             pointRadius: 5,
-            spanGaps: false
+            spanGaps: true
           },
           {
             label: '最低血圧 (mmHg)',
@@ -75,7 +75,7 @@ export default class extends Controller {
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
             pointRadius: 5,
-            spanGaps: false
+            spanGaps: true
           }
         ]
       },
@@ -151,7 +151,7 @@ export default class extends Controller {
             pointBorderColor: '#fff',
             pointBorderWidth: 2,
             pointRadius: 5,
-            spanGaps: false
+            spanGaps: true
           }
         ]
       },
