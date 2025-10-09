@@ -54,7 +54,7 @@
             <% end %>
             
             <% medical_staff_roles = @roles.select(&:is_medical_staff?) %>
-            <% patient_roles = @roles.reject(&:is_medical_staff?) %>
+            <% patient_roles = @roles.reject(&:is_medical_staff?).reject { |role| role.name == 'システム管理者' } %>
             
             <% if medical_staff_roles.any? %>
               <div class="mb-2">
