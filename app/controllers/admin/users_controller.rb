@@ -20,7 +20,7 @@ class Admin::UsersController < Admin::BaseController
       @users = @users.joins(:user_hospital_roles).where(user_hospital_roles: { hospital_id: params[:hospital_id] }).distinct
     end
 
-    # 患者/医療従事者フィルター
+    # 患者/医療従事者/病院管理者フィルター
     if params[:user_type].present?
       if params[:user_type] == 'patient'
         # 患者のみ（医療従事者ではない役割）
@@ -28,6 +28,12 @@ class Admin::UsersController < Admin::BaseController
       elsif params[:user_type] == 'medical_staff'
         # 医療従事者のみ
         @users = @users.joins(:user_hospital_roles => :role).where(roles: { is_medical_staff: true }).distinct
+      elsif params[:user_type] == 'hospital_admin'
+        # 病院管理者のみ（医療従事者でpermission_level = 1）
+        @users = @users.joins(:user_hospital_roles => :role)
+                       .where(roles: { is_medical_staff: true })
+                       .where(user_hospital_roles: { permission_level: UserHospitalRole.permission_levels[:administrator] })
+                       .distinct
       end
     end
   end

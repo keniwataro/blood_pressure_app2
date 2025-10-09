@@ -22,7 +22,8 @@
         <%= f.select :user_type, options_for_select([
                        ['すべて', ''],
                        ['患者', 'patient'],
-                       ['医療従事者', 'medical_staff']
+                       ['医療従事者', 'medical_staff'],
+                       ['病院管理者', 'hospital_admin']
                      ], params[:user_type]), {}, class: "form-select" %>
       </div>
       <div class="col-md-2">
@@ -57,7 +58,7 @@
                 <td>
                   <% user_roles = user.user_hospital_roles.includes(:role).distinct %>
                   <% user_roles.each do |user_role| %>
-                    <% if user_role.permission_level == 1 %>
+                    <% if user_role.role.is_medical_staff && user_role.permission_level_before_type_cast == 1 %>
                       <span class="badge bg-warning"><%= user_role.role.name %></span>
                     <% elsif !user_role.role.is_hospital_role %>
                       <span class="badge bg-danger"><%= user_role.role.name %></span>
