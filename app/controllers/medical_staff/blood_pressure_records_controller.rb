@@ -36,6 +36,6 @@ class MedicalStaff::BloodPressureRecordsController < ApplicationController
   def set_blood_pressure_record
     @blood_pressure_record = @patient.blood_pressure_records.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to medical_staff_patient_blood_pressure_records_path(@patient), alert: '血圧記録が見つかりませんでした。'
+    redirect_to medical_staff_patient_path(@patient), alert: '血圧記録が見つかりませんでした。'
   end
 end

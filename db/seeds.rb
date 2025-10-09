@@ -270,7 +270,7 @@ if Rails.env.development?
       systolic_pressure: systolic,
       diastolic_pressure: diastolic,
       pulse_rate: pulse,
-      measured_at: date + rand(8..20).hours,
+      measured_at: Time.zone.parse("#{date.strftime('%Y-%m-%d')} #{rand(8..20)}:#{rand(0..59)}:00"),
       memo: i % 5 == 0 ? "調子#{['良好', '普通', 'やや疲れ気味'][rand(3)]}" : nil
     )
   end
@@ -287,7 +287,7 @@ if Rails.env.development?
       systolic_pressure: systolic,
       diastolic_pressure: diastolic,
       pulse_rate: pulse,
-      measured_at: date + rand(9..19).hours
+      measured_at: Time.zone.parse("#{date.strftime('%Y-%m-%d')} #{rand(9..19)}:#{rand(0..59)}:00")
     )
   end
   puts "血圧記録15件作成完了 (#{multi_role_user2.name})"
@@ -303,7 +303,7 @@ if Rails.env.development?
       systolic_pressure: systolic,
       diastolic_pressure: diastolic,
       pulse_rate: pulse,
-      measured_at: date + rand(10..18).hours
+      measured_at: Time.zone.parse("#{date.strftime('%Y-%m-%d')} #{rand(10..18)}:#{rand(0..59)}:00")
     )
   end
   puts "血圧記録10件作成完了 (#{multi_role_user3.name})"

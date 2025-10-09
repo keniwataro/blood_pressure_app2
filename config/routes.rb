@@ -28,6 +28,7 @@ Rails.application.routes.draw do
         post 'assign_staff'
         delete 'unassign_staff'
       end
+      resources :blood_pressure_records, only: [:show]
     end
     resources :staff do
       collection do
