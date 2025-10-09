@@ -2,31 +2,15 @@ Rails.application.routes.draw do
   # Deviseのルート設定（registrationsを無効化）
   devise_for :users, skip: [:registrations]
   
+  # システム管理者用の画面
+  namespace :admin do
+    root 'dashboard#index'
+    resources :users, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  end
+  
   # 医療従事者用の画面
   namespace :medical_staff do
     root 'dashboard#index'
-    resources :patients, only: [:index, :show, :new, :create, :edit, :update, :destroy] do
-      collection do
-        post 'confirm_new'
-      end
-      member do
-        post 'confirm_edit'
-      end
-      resources :blood_pressure_records, only: [:index, :show]
-      # 担当スタッフの設定
-      post 'assign_staff', to: 'patients#assign_staff'
-      delete 'unassign_staff/:staff_id', to: 'patients#unassign_staff', as: 'unassign_staff'
-    end
-    resources :staff, only: [:index, :show, :new, :create, :edit, :update, :destroy] do
-      collection do
-        post 'confirm_new'
-      end
-      member do
-        post 'confirm_edit'
-        post 'confirm_with_role'
-        post 'confirm_reassignment'
-      end
-    end
   end
   
   # ルートページ（患者か医療従事者かで振り分け）

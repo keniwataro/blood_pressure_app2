@@ -24,6 +24,8 @@ class Hospital < ApplicationRecord
 
   # スコープ
   scope :with_name, ->(name) { where("name ILIKE ?", "%#{name}%") }
+  scope :excluding_system_admin, -> { where.not(id: 1) }
+  scope :including_system_admin, -> { where(id: 1) }
   
   # メソッド
   def medical_staff

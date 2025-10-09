@@ -11,6 +11,11 @@ module App
     # 元々生成されたRailsバージョンのデフォルト設定を初期化します。
     config.load_defaults 7.1
 
+    # Turboを完全に無効化
+    config.turbo.signed_stream_verifier_key = nil
+    config.turbo.draw_routes = false
+    config.turbo.mount_path = nil
+
     # .rbファイルを含まない他のlibサブディレクトリ、またはリロードまたはeager loadしないものを
     # ignoreリストに追加してください。
     # 一般的なものはtemplates、generators、またはmiddlewareなどです。

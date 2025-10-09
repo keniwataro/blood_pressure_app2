@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>血圧管理システム - システム管理</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="turbo-visit-control" content="reload">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <!-- ナビゲーションバー（ログイン済みの場合のみ表示） -->
+    <% if user_signed_in? %>
+      <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+          <%= link_to "血圧管理システム - システム管理", admin_root_path, class: "navbar-brand" %>
+
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+              <!-- システム管理者用メニュー -->
+              <li class="nav-item">
+                <%= link_to "ダッシュボード", admin_root_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "ユーザー一覧", admin_users_path, class: "nav-link" %>
+              </li>
+            </ul>
+
+            <ul class="navbar-nav">
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <%= current_user.name || current_user.email %>
+                  <% if current_user.current_role.present? %>
+                    <span class="badge bg-danger ms-1"><%= current_user.current_role.name %></span>
+                  <% end %>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "プロフィール", profile_path, class: "dropdown-item" %></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <% if current_user.has_multiple_roles? %>
+                    <li>
+                      <%= link_to "役割を切り替え", root_path, class: "dropdown-item" %>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                  <% end %>
+                  <li><%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "dropdown-item" %></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    <% end %>
+
+    <!-- フラッシュメッセージ -->
+    <div class="container mt-3">
+      <% if notice %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= notice %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% end %>
+      
+      <% if alert %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= alert %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <main class="container my-4">
+      <%= yield %>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+      <div class="container">
+        <p class="mb-0">&copy; 2025 血圧管理システム - システム管理</p>
+      </div>
+    </footer>
+  </body>
+</html>

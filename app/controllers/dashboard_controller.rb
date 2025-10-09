@@ -2,6 +2,12 @@ class DashboardController < ApplicationController
   before_action :authenticate_user!
 
   def index
+    # システム管理者の場合は管理画面にリダイレクト
+    if current_user.system_admin?
+      redirect_to admin_root_path
+      return
+    end
+    
     @available_roles = current_user.available_roles
     
     # 複数の役割を持っている場合、ダッシュボードを表示
@@ -23,7 +29,9 @@ class DashboardController < ApplicationController
       flash[:notice] = "役割を「#{role.name}」に切り替えました。"
       
       # 切り替え後の画面にリダイレクト
-      if role.is_medical_staff?
+      if role.name == 'システム管理者'
+        redirect_to admin_root_path
+      elsif role.is_medical_staff?
         redirect_to medical_staff_root_path
       else
         redirect_to blood_pressure_records_path

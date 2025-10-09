@@ -44,6 +44,10 @@ Rails.application.configure do
   # 非推奨の通知をRailsロガーに表示します。
   config.active_support.deprecation = :log
 
+  # ログ設定を追加
+  config.logger = Logger.new(STDOUT)
+  config.log_level = :debug
+
   # 許可されていない非推奨に対して例外を発生させます。
   config.active_support.disallowed_deprecation = :raise
 

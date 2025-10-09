@@ -4,6 +4,7 @@
 #
 #  id               :bigint           not null, primary key
 #  description      :string
+#  is_hospital_role :boolean          default(TRUE), not null
 #  is_medical_staff :boolean          default(FALSE), not null
 #  name             :string           not null
 #  created_at       :datetime         not null

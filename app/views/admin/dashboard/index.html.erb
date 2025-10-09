@@ -1,0 +1,35 @@
+<div class="row">
+  <div class="col-12">
+    <h1 class="h2 mb-4">システム管理ダッシュボード</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">クイックアクション</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <%= link_to "新規ユーザー登録", new_admin_user_path, class: "btn btn-primary" %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">管理メニュー</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <%= link_to "ユーザー一覧を見る", admin_users_path, class: "text-decoration-none" %>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

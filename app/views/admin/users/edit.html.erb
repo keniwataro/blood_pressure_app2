@@ -1,0 +1,388 @@
+<div class="mb-4">
+  <h1 class="h2">ユーザー情報編集</h1>
+</div>
+
+<script>
+  // 医療従事者の役割データをJavaScriptで利用可能にする
+  if (typeof medicalRoles === 'undefined') {
+    var medicalRoles = <%= @roles.to_json.html_safe %>;
+  }
+
+  // 既存ユーザーの病院・役割データをJavaScriptで利用可能にする
+  if (typeof existingHospitalRoles === 'undefined') {
+    var existingHospitalRoles = <%= @existing_hospital_roles.to_json.html_safe %>;
+  }
+
+  // 既存ユーザーのグローバル役割データをJavaScriptで利用可能にする
+  if (typeof existingGlobalRoleIds === 'undefined') {
+    var existingGlobalRoleIds = <%= @existing_global_role_ids.to_json.html_safe %>;
+  }
+
+  // ページが完全に読み込まれた後に実行する関数
+  window.setupHospitalRoles = function() {
+    // 二重実行防止
+    if (window.setupHospitalRoles.executed) {
+      console.log('setupHospitalRoles already executed, skipping');
+      return;
+    }
+    window.setupHospitalRoles.executed = true;
+
+    console.log('setupHospitalRoles関数が実行されました');
+
+    const addHospitalBtn = document.getElementById('add_hospital_btn');
+    const hospitalSelect = document.getElementById('hospital_select');
+
+    console.log('ボタン要素:', addHospitalBtn);
+    console.log('セレクト要素:', hospitalSelect);
+
+    // 既存ユーザーのグローバル役割をチェック
+    if (existingGlobalRoleIds && Array.isArray(existingGlobalRoleIds)) {
+      existingGlobalRoleIds.forEach(function(roleId) {
+        const checkbox = document.getElementById('global_role_' + roleId);
+        if (checkbox) {
+          checkbox.checked = true;
+        }
+      });
+    }
+
+    // 既存ユーザーの病院・役割情報を表示（システム管理病院は除外）
+    if (existingHospitalRoles && typeof existingHospitalRoles === 'object') {
+      console.log('existingHospitalRoles:', existingHospitalRoles);
+
+      // 処理済みの病院IDを追跡
+      const processedHospitalIds = new Set();
+
+      Object.keys(existingHospitalRoles).forEach(function(hospitalId) {
+        // システム管理病院（ID: 1）は表示しない
+        if (parseInt(hospitalId) === 1) {
+          return;
+        }
+
+        // 既に処理済みの病院はスキップ
+        if (processedHospitalIds.has(hospitalId)) {
+          console.log('Skipping already processed hospital:', hospitalId);
+          return;
+        }
+
+        const hospitalData = existingHospitalRoles[hospitalId];
+        if (!hospitalData || !hospitalData.hospital_name) {
+          return;
+        }
+
+        console.log('Creating frame for hospital:', hospitalId, hospitalData);
+
+        // 病院フレームを作成
+        createExistingHospitalFrame(hospitalId, hospitalData);
+        processedHospitalIds.add(hospitalId);
+
+        // ドロップダウンからこの病院を除外
+        const optionToRemove = hospitalSelect.querySelector(`option[value="${hospitalId}"]`);
+        if (optionToRemove) {
+          optionToRemove.remove();
+        }
+      });
+    }
+
+    if (!addHospitalBtn || !hospitalSelect) {
+      console.log('要素が見つからないので、再試行します');
+      // 要素が見つからない場合は少し待ってから再試行
+      setTimeout(setupHospitalRoles, 100);
+      return;
+    }
+
+    // 既にイベントリスナーが設定されているかチェック
+    if (addHospitalBtn.hasAttribute('data-listener-set')) {
+      console.log('イベントリスナーは既に設定されています');
+      return;
+    }
+
+    addHospitalBtn.setAttribute('data-listener-set', 'true');
+    console.log('イベントリスナーを設定します');
+
+    // 追加ボタンのクリックイベント
+    addHospitalBtn.addEventListener('click', function() {
+      const selectedHospitalId = hospitalSelect.value;
+      const selectedHospitalName = hospitalSelect.options[hospitalSelect.selectedIndex].text;
+
+      // デバッグ情報
+      console.log('選択された病院ID:', selectedHospitalId);
+      console.log('選択された病院名:', selectedHospitalName);
+      console.log('選択要素の値:', hospitalSelect.value);
+      console.log('選択されたインデックス:', hospitalSelect.selectedIndex);
+
+      if (!selectedHospitalId) {
+        console.log('病院が選択されていません');
+        alert('病院を選択してください');
+        return;
+      }
+
+      // すでに追加されているかチェック
+      if (document.getElementById('hospital_frame_' + selectedHospitalId)) {
+        alert('この病院は既に追加されています');
+        return;
+      }
+
+      // 病院の枠を生成
+      const container = document.getElementById('hospital_roles_container');
+      const hospitalFrame = document.createElement('div');
+      hospitalFrame.className = 'mb-3 p-3 border rounded';
+      hospitalFrame.id = 'hospital_frame_' + selectedHospitalId;
+
+      // 医療従事者の役割のチェックボックスを動的に生成
+      let medicalRolesHtml = '';
+      medicalRoles.forEach(function(role) {
+        medicalRolesHtml += `
+          <div class="form-check form-check-inline">
+            <input type="checkbox" name="hospital_medical_roles[${selectedHospitalId}][]" value="${role.id}" id="medical_role_${selectedHospitalId}_${role.id}" class="form-check-input">
+            <label for="medical_role_${selectedHospitalId}_${role.id}" class="form-check-label">${role.name}</label>
+          </div>
+        `;
+      });
+
+      hospitalFrame.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="mb-0">${selectedHospitalName}</h6>
+          <button type="button" class="btn btn-sm btn-outline-danger remove-hospital-btn" data-hospital-id="${selectedHospitalId}">削除</button>
+        </div>
+        <input type="hidden" name="selected_hospitals[]" value="${selectedHospitalId}">
+        <small class="text-muted mb-2 d-block">この病院での役割を選択してください：</small>
+        <div class="form-check mb-2">
+          <input type="checkbox" name="hospital_patient[${selectedHospitalId}]" value="1" id="patient_${selectedHospitalId}" class="form-check-input">
+          <label for="patient_${selectedHospitalId}" class="form-check-label fw-bold">患者</label>
+          <small class="text-muted d-block ms-4">患者としての役割が割り当てられます</small>
+        </div>
+        <div class="mb-2">
+          <strong class="d-block mb-2">医療従事者</strong>
+          <small class="text-muted d-block mb-2">医療従事者の役割を個別に選択してください：</small>
+          <div class="ms-3">
+            ${medicalRolesHtml}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(hospitalFrame);
+
+      // ドロップダウンからこの病院を削除
+      const optionToRemove = hospitalSelect.querySelector(`option[value="${selectedHospitalId}"]`);
+      if (optionToRemove) {
+        optionToRemove.remove();
+      }
+    });
+
+    // 削除ボタンのイベント（イベント委譲を使用）
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-hospital-btn')) {
+        const hospitalId = e.target.getAttribute('data-hospital-id');
+        const hospitalFrame = document.getElementById('hospital_frame_' + hospitalId);
+        if (hospitalFrame) {
+          const hospitalName = hospitalFrame.querySelector('h6').textContent;
+          hospitalFrame.remove();
+          // ドロップダウンにこの病院を追加
+          const option = document.createElement('option');
+          option.value = hospitalId;
+          option.textContent = hospitalName;
+          hospitalSelect.appendChild(option);
+        }
+      }
+    });
+  }
+
+  // 既存ユーザーの病院フレームを作成する関数
+  function createExistingHospitalFrame(hospitalId, hospitalData) {
+    const container = document.getElementById('hospital_roles_container');
+
+    // 既に同じIDのフレームが存在する場合は作成しない
+    if (document.getElementById('hospital_frame_' + hospitalId)) {
+      console.log('Frame already exists for hospital:', hospitalId);
+      return;
+    }
+
+    const hospitalFrame = document.createElement('div');
+    hospitalFrame.className = 'mb-3 p-3 border rounded';
+    hospitalFrame.id = 'hospital_frame_' + hospitalId;
+
+    // 患者役割があるかチェック（重複を避けるため、roles配列内で一意にチェック）
+    const hasPatientRole = hospitalData.roles.some(role => role.is_patient);
+
+    // 医療従事者役割を取得（重複を避けるため、ユニークなrole_idのみ）
+    const medicalStaffRoles = [];
+    hospitalData.roles.forEach(role => {
+      if (role.is_medical_staff && !medicalStaffRoles.some(existing => existing.role_id === role.role_id)) {
+        medicalStaffRoles.push(role);
+      }
+    });
+
+    // 医療従事者の役割のチェックボックスを動的に生成
+    let medicalRolesHtml = '';
+    medicalRoles.forEach(function(role) {
+      const isChecked = medicalStaffRoles.some(existingRole => existingRole.role_id === role.id);
+      medicalRolesHtml += `
+        <div class="form-check form-check-inline">
+          <input type="checkbox" name="hospital_medical_roles[${hospitalId}][]" value="${role.id}" id="medical_role_${hospitalId}_${role.id}" class="form-check-input" ${isChecked ? 'checked' : ''}>
+          <label for="medical_role_${hospitalId}_${role.id}" class="form-check-label">${role.name}</label>
+        </div>
+      `;
+    });
+
+    hospitalFrame.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0">${hospitalData.hospital_name}</h6>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-hospital-btn" data-hospital-id="${hospitalId}">削除</button>
+      </div>
+      <input type="hidden" name="selected_hospitals[]" value="${hospitalId}">
+      <small class="text-muted mb-2 d-block">この病院での役割を選択してください：</small>
+      <div class="form-check mb-2">
+        <input type="checkbox" name="hospital_patient[${hospitalId}]" value="1" id="patient_${hospitalId}" class="form-check-input" ${hasPatientRole ? 'checked' : ''}>
+        <label for="patient_${hospitalId}" class="form-check-label fw-bold">患者</label>
+        <small class="text-muted d-block ms-4">患者としての役割が割り当てられます</small>
+      </div>
+      <div class="mb-2">
+        <strong class="d-block mb-2">医療従事者</strong>
+        <small class="text-muted d-block mb-2">医療従事者の役割を個別に選択してください：</small>
+        <div class="ms-3">
+          ${medicalRolesHtml}
+        </div>
+      </div>
+    `;
+
+    container.appendChild(hospitalFrame);
+  }
+
+  function removeHospitalFromSelect(hospitalId) {
+    const optionToRemove = hospitalSelect.querySelector(`option[value="${hospitalId}"]`);
+    if (optionToRemove) {
+      optionToRemove.remove();
+    }
+  }
+
+  // ページ読み込み完了後に実行
+  document.addEventListener('DOMContentLoaded', function() {
+    // 少し待ってから実行して、すべての要素が確実に読み込まれるようにする
+    setTimeout(window.setupHospitalRoles, 100);
+  });
+
+  // 念のため、ウィンドウ読み込み完了時にも実行
+  window.addEventListener('load', function() {
+    setTimeout(window.setupHospitalRoles, 100);
+
+    // パスワード変更チェックボックスの処理
+    const skipPasswordCheckbox = document.getElementById('skip_password_update');
+    const passwordFields = document.getElementById('password_fields');
+    const passwordConfirmationFields = document.getElementById('password_confirmation_fields');
+
+    function togglePasswordFields() {
+      if (skipPasswordCheckbox.checked) {
+        passwordFields.style.display = 'none';
+        passwordConfirmationFields.style.display = 'none';
+      } else {
+        passwordFields.style.display = 'block';
+        passwordConfirmationFields.style.display = 'block';
+      }
+    }
+
+    // 初期状態の設定
+    togglePasswordFields();
+
+    // チェックボックスの変更を監視
+    skipPasswordCheckbox.addEventListener('change', togglePasswordFields);
+  });
+</script>
+
+<div class="card">
+  <div class="card-body">
+    <%= form_with(model: @user, url: admin_user_path(@user), method: :patch, data: { turbo: false }) do |f| %>
+      <% if @user.errors.any? %>
+        <div class="alert alert-danger">
+          <h4><%= pluralize(@user.errors.count, "個のエラー") %>が発生しました:</h4>
+          <ul class="mb-0">
+            <% @user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="mb-3">
+        <%= f.label :name, "スタッフ名", class: "form-label" %>
+        <span class="text-danger">*</span>
+        <%= f.text_field :name, class: "form-control", placeholder: "例: 山田太郎" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :email, "メールアドレス", class: "form-label" %>
+        <span class="text-danger">*</span>
+        <%= f.email_field :email, class: "form-control", placeholder: "例: staff@example.com" %>
+      </div>
+
+      <div class="mb-3">
+        <div class="form-check mb-2">
+          <%= check_box_tag 'skip_password_update', '1', true, id: 'skip_password_update', class: 'form-check-input' %>
+          <%= label_tag 'skip_password_update', 'パスワード変更なし', class: 'form-check-label' %>
+          <small class="text-muted d-block">チェックを入れるとパスワードは変更されません</small>
+        </div>
+      </div>
+
+      <div class="mb-3" id="password_fields" style="display: none;">
+        <%= f.label :password, "パスワード", class: "form-label" %>
+        <span class="text-danger">*</span>
+        <%= f.password_field :password, class: "form-control", placeholder: "6文字以上" %>
+        <div class="form-text">6文字以上で入力してください</div>
+      </div>
+
+      <div class="mb-3" id="password_confirmation_fields" style="display: none;">
+        <%= f.label :password_confirmation, "パスワード（確認）", class: "form-label" %>
+        <span class="text-danger">*</span>
+        <%= f.password_field :password_confirmation, class: "form-control", placeholder: "パスワードを再入力" %>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label"><strong>役割</strong></label>
+        <div class="form-text mb-2">病院に依存しない役割を選択してください（オプション）</div>
+
+        <% if @global_roles.present? %>
+          <% @global_roles.each do |role| %>
+            <div class="form-check">
+              <%= check_box_tag 'global_role_ids[]', role.id, @existing_global_role_ids&.include?(role.id), id: "global_role_#{role.id}", class: "form-check-input" %>
+              <%= label_tag "global_role_#{role.id}", role.name, class: "form-check-label" %>
+              <% if role.description.present? %>
+                <small class="text-muted d-block ms-4"><%= role.description %></small>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">グローバル役割が見つかりません。</p>
+        <% end %>
+      </div>
+
+      <div class="mb-3">
+        <%= label_tag "hospital_roles", "所属病院と役割（病院毎に役割を選択）", class: "form-label" %>
+        <span class="text-danger">*</span>
+
+        <!-- 病院選択と追加ボタン -->
+        <div class="mb-3">
+          <div class="row g-2">
+            <div class="col-auto">
+              <%= select_tag "hospital_select", options_for_select([["病院を選択してください", ""]] + @hospitals.map { |h| [h.name, h.id] }), { class: "form-select", id: "hospital_select" } %>
+            </div>
+            <div class="col-auto">
+              <button type="button" class="btn btn-outline-primary" id="add_hospital_btn">追加</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 追加された病院の枠 -->
+        <div id="hospital_roles_container">
+          <!-- ここにJavaScriptで病院の枠が追加されます -->
+        </div>
+
+        <div class="form-text">病院を選択して追加ボタンを押すと、各病院での役割を選択できます</div>
+      </div>
+
+
+      <div class="d-flex gap-2">
+        <%= f.submit "更新する", class: "btn btn-primary" %>
+        <%= link_to "キャンセル", admin_user_path(@user), class: "btn btn-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

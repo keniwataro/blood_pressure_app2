@@ -159,6 +159,11 @@ class User < ApplicationRecord
     end
   end
   
+  # システム管理者かチェック
+  def system_admin?
+    current_role&.id == 1 && current_role&.name == 'システム管理者'
+  end
+  
   private
   
   def generate_user_id

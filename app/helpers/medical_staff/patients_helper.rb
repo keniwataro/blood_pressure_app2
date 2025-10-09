@@ -1,2 +1,0 @@
-module MedicalStaff::PatientsHelper
-end

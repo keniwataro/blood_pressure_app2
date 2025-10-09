@@ -5,21 +5,52 @@
 # 役割マスターデータの作成（全環境で実行）
 puts "役割マスターデータの作成..."
 
+# マイグレーションで作成されたシステム管理者を確認
+system_admin_role = Role.find_by(id: 1, name: 'システム管理者')
+if system_admin_role.nil?
+  # マイグレーションで作成されていない場合は作成
+  Role.create!(
+    id: 1,
+    name: 'システム管理者',
+    is_medical_staff: false,
+    is_hospital_role: false,
+    description: 'システム全体を管理する管理者'
+  )
+  puts "システム管理者役割を作成しました"
+end
+
+# 役割データ
 roles_data = [
-  { name: '患者', is_medical_staff: false, description: '血圧記録を行う患者' },
-  { name: '医師', is_medical_staff: true, description: '診療を行う医師' },
-  { name: '看護師', is_medical_staff: true, description: '看護業務を行う看護師' },
-  { name: '薬剤師', is_medical_staff: true, description: '調剤業務を行う薬剤師' },
-  { name: '医療事務', is_medical_staff: true, description: '受付・事務業務を行う医療事務' },
-  { name: '臨床検査技師', is_medical_staff: true, description: '検査業務を行う臨床検査技師' },
-  { name: '放射線技師', is_medical_staff: true, description: '放射線業務を行う放射線技師' },
-  { name: '理学療法士', is_medical_staff: true, description: 'リハビリ業務を行う理学療法士' }
+  { name: '患者', is_medical_staff: false, is_hospital_role: true, description: '血圧記録を行う患者' },
+  { name: '医師', is_medical_staff: true, is_hospital_role: true, description: '診療を行う医師' },
+  { name: '看護師', is_medical_staff: true, is_hospital_role: true, description: '看護業務を行う看護師' },
+  { name: '薬剤師', is_medical_staff: true, is_hospital_role: true, description: '調剤業務を行う薬剤師' },
+  { name: '医療事務', is_medical_staff: true, is_hospital_role: true, description: '受付・事務業務を行う医療事務' },
+  { name: '臨床検査技師', is_medical_staff: true, is_hospital_role: true, description: '検査業務を行う臨床検査技師' },
+  { name: '放射線技師', is_medical_staff: true, is_hospital_role: true, description: '放射線業務を行う放射線技師' },
+  { name: '理学療法士', is_medical_staff: true, is_hospital_role: true, description: 'リハビリ業務を行う理学療法士' }
 ]
 
+# 役割を作成（既存データは上書きしない）
 roles_data.each do |role_data|
-  Role.find_or_create_by(name: role_data[:name]) do |role|
-    role.is_medical_staff = role_data[:is_medical_staff]
-    role.description = role_data[:description]
+  role = Role.find_by(name: role_data[:name])
+  if role.nil?
+    begin
+      Role.create!(
+        name: role_data[:name],
+        is_medical_staff: role_data[:is_medical_staff],
+        is_hospital_role: role_data[:is_hospital_role],
+        description: role_data[:description]
+      )
+    rescue ActiveRecord::RecordNotUnique
+      # 万一idが重複する場合は次のidで作成
+      Role.create!(
+        name: role_data[:name],
+        is_medical_staff: role_data[:is_medical_staff],
+        is_hospital_role: role_data[:is_hospital_role],
+        description: role_data[:description]
+      )
+    end
   end
 end
 
@@ -27,16 +58,18 @@ puts "役割マスターデータ作成完了: #{Role.count}件"
 
 # 開発環境でのサンプルデータ作成
 if Rails.env.development?
-  # 既存データをクリア
   puts "既存データをクリア中..."
+
+  # データをクリア（システム管理関連データ以外）
   BloodPressureRecord.destroy_all
   PatientStaffAssignment.destroy_all
   UserHospitalRole.destroy_all
   User.destroy_all
-  Hospital.destroy_all
+  Hospital.where.not(id: 1).destroy_all
+
   puts "既存データのクリア完了"
 
-  # 病院のサンプルデータ
+  # 病院のサンプルデータ（既存データは上書きしない）
   hospitals_data = [
     {
       name: '○○総合病院',
@@ -49,13 +82,35 @@ if Rails.env.development?
       address: '東京都新宿区△△4-5-6',
       phone_number: '03-9876-5432',
       website: nil
+    },
+    {
+      name: '□□外科医院',
+      address: '東京都港区□□7-8-9',
+      phone_number: '03-5555-6666',
+      website: 'https://surgical-clinic.example.com'
+    },
+    {
+      name: '★★大学病院',
+      address: '東京都文京区★★10-11-12',
+      phone_number: '03-7777-8888',
+      website: 'https://university-hospital.example.com'
+    },
+    {
+      name: '★★★小児科クリニック',
+      address: '東京都世田谷区★★★13-14-15',
+      phone_number: '03-9999-0000',
+      website: nil
     }
   ]
 
   hospitals_data.each do |hospital_data|
-    Hospital.create!(hospital_data)
+    Hospital.find_or_create_by(name: hospital_data[:name]) do |hospital|
+      hospital.address = hospital_data[:address]
+      hospital.phone_number = hospital_data[:phone_number]
+      hospital.website = hospital_data[:website]
+    end
   end
-  puts "病院データ2件作成完了"
+  puts "病院データ#{hospitals_data.size}件作成完了"
 
   # 役割の取得
   patient_role = Role.find_by(name: '患者')
@@ -64,8 +119,10 @@ if Rails.env.development?
   clerk_role = Role.find_by(name: '医療事務')
   pharmacist_role = Role.find_by(name: '薬剤師')
 
-  hospital1 = Hospital.first
-  hospital2 = Hospital.second
+  # システム管理病院を除外して通常の病院を取得
+  normal_hospitals = Hospital.where.not(id: 1)
+  hospital1 = normal_hospitals.first
+  hospital2 = normal_hospitals.second
 
   # 1. テストユーザー（患者のみ）
   patient_user = User.create!(
@@ -251,11 +308,82 @@ if Rails.env.development?
   end
   puts "血圧記録10件作成完了 (#{multi_role_user3.name})"
 
+  # システム管理者アカウントの作成（マイグレーションで作成されたデータを前提）
+  puts "\nシステム管理者アカウントを作成中..."
+
+  # マイグレーションで作成されたデータを確認
+  system_admin_role = Role.find_by(id: 1)
+  system_hospital = Hospital.find_by(id: 1)
+
+  if system_admin_role.nil?
+    # マイグレーションで作成されていない場合のみ作成
+    system_admin_role = Role.create!(
+      id: 1,
+      name: 'システム管理者',
+      is_medical_staff: false,
+      description: 'システム全体を管理する管理者'
+    )
+    puts "システム管理者役割を作成しました"
+  end
+
+  # システム管理病院を作成（既存のものは削除して再作成）
+  system_hospital = Hospital.find_by(id: 1)
+  if system_hospital.nil?
+    system_hospital = Hospital.create!(
+      id: 1,
+      name: 'システム管理',
+      address: 'システム管理用',
+      phone_number: nil,
+      website: nil
+    )
+    puts "システム管理病院を作成しました"
+  else
+    # 既に存在する場合は名前を更新
+    system_hospital.update!(
+      name: 'システム管理',
+      address: 'システム管理用'
+    )
+    puts "システム管理病院を更新しました"
+  end
+
+  # システム管理者アカウント作成
+  admin_user = User.find_or_initialize_by(email: 'admin@system.com')
+  if admin_user.new_record?
+    admin_user.assign_attributes(
+      name: 'システム管理者',
+      password: 'admin123',
+      password_confirmation: 'admin123',
+      current_role_id: system_admin_role.id
+    )
+    admin_user.save!
+
+    # システム管理者をシステム管理病院に所属させる
+    UserHospitalRole.find_or_create_by!(
+      user: admin_user,
+      hospital: system_hospital,
+      role: system_admin_role
+    )
+
+    puts "システム管理者アカウント作成完了: #{admin_user.email} (パスワード: admin123)"
+  else
+    puts "システム管理者アカウントは既に存在します: #{admin_user.email}"
+
+    # 既存のシステム管理者もシステム管理病院に所属させる
+    unless admin_user.user_hospital_roles.exists?(hospital: system_hospital, role: system_admin_role)
+      UserHospitalRole.find_or_create_by!(
+        user: admin_user,
+        hospital: system_hospital,
+        role: system_admin_role
+      )
+      puts "既存のシステム管理者をシステム管理病院に所属させました"
+    end
+  end
+
   puts "\n========================================="
   puts "サンプルデータの作成が完了しました。"
   puts "=========================================\n"
   puts "【全アカウント】（パスワード: password）\n"
-  
+
   User.all.each do |u|
     roles_info = u.user_hospital_roles.map do |uhr|
       permission = uhr.permission_level_administrator? ? ' (管理者)' : uhr.permission_level_general? ? ' (一般)' : ''
@@ -267,10 +395,11 @@ if Rails.env.development?
     puts "    現在の役割: #{current_role_name}"
     puts ""
   end
-  
+
   puts "【病院】"
-  Hospital.all.each do |h|
-    puts "  #{h.name}"
+  Hospital.all.order(:id).each do |h|
+    puts "  #{h.name} (ID: #{h.id}) - #{h.address}"
   end
+  puts "  総病院数: #{Hospital.count}件"
   puts "=========================================\n"
 end
