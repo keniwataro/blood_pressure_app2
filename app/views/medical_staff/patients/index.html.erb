@@ -79,7 +79,7 @@
                   <% assigned_staff.each do |staff| %>
                     <div class="d-flex justify-content-between align-items-center mb-1">
                       <span class="badge bg-info me-1"><%= staff.name %></span>
-                      <%= button_to "×", medical_staff_patient_unassign_staff_path(patient, staff_id: staff.id), 
+                      <%= button_to "×", unassign_staff_medical_staff_patient_path(patient, staff_id: staff.id), 
                                     method: :delete,
                                     class: "btn btn-sm btn-outline-danger py-0 px-1",
                                     style: "line-height: 1;",
@@ -92,7 +92,7 @@
               </div>
               
               <!-- 担当スタッフ追加フォーム -->
-              <%= form_with url: medical_staff_patient_assign_staff_path(patient), method: :post, class: "mt-2" do |f| %>
+              <%= form_with url: assign_staff_medical_staff_patient_path(patient), method: :post, class: "mt-2" do |f| %>
                 <div class="input-group input-group-sm">
                   <%= select_tag :staff_id, 
                                 options_for_select(

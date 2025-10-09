@@ -11,6 +11,26 @@ Rails.application.routes.draw do
   # 医療従事者用の画面
   namespace :medical_staff do
     root 'dashboard#index'
+    resources :patients do
+      collection do
+        post 'confirm_new'
+      end
+      member do
+        post 'confirm_edit'
+        post 'assign_staff'
+        delete 'unassign_staff'
+      end
+    end
+    resources :staff do
+      collection do
+        post 'confirm_new'
+        post 'confirm_reassignment'
+      end
+      member do
+        post 'confirm_edit'
+        post 'confirm_with_role'
+      end
+    end
   end
   
   # ルートページ（患者か医療従事者かで振り分け）
