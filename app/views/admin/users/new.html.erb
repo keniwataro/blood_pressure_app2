@@ -82,6 +82,11 @@
         <input type="hidden" name="selected_hospitals[]" value="${selectedHospitalId}">
         <small class="text-muted mb-2 d-block">この病院での役割を選択してください：</small>
         <div class="form-check mb-2">
+          <input type="checkbox" name="hospital_admin[${selectedHospitalId}]" value="1" id="admin_${selectedHospitalId}" class="form-check-input">
+          <label for="admin_${selectedHospitalId}" class="form-check-label fw-bold">病院管理者</label>
+          <small class="text-muted d-block ms-4">この病院の管理者権限を持ちます</small>
+        </div>
+        <div class="form-check mb-2">
           <input type="checkbox" name="hospital_patient[${selectedHospitalId}]" value="1" id="patient_${selectedHospitalId}" class="form-check-input">
           <label for="patient_${selectedHospitalId}" class="form-check-label fw-bold">患者</label>
           <small class="text-muted d-block ms-4">患者としての役割が割り当てられます</small>

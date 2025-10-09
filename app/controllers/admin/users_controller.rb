@@ -59,6 +59,7 @@ class Admin::UsersController < Admin::BaseController
     @selected_hospital_ids = params[:selected_hospitals]&.reject(&:blank?)&.map(&:to_i) || []
     @global_role_ids = params[:global_role_ids] || []
     @system_admin_selected = @global_role_ids.include?(@global_roles.find_by(name: 'システム管理者')&.id.to_s)
+    @hospital_admins = params[:hospital_admin] || {}
     @hospital_patients = params[:hospital_patient] || {}
     @hospital_medical_roles = params[:hospital_medical_roles] || {}
 
@@ -69,14 +70,15 @@ class Admin::UsersController < Admin::BaseController
       return
     end
 
-    # 各選択された病院で患者または医療従事者の役割が選択されているかチェック
+    # 各選択された病院で患者、医療従事者、または病院管理者の役割が選択されているかチェック
     @selected_hospital_ids.each do |hospital_id|
+      has_admin = @hospital_admins[hospital_id.to_s].present?
       has_patient = @hospital_patients[hospital_id.to_s].present?
       has_medical_roles = @hospital_medical_roles[hospital_id.to_s]&.reject(&:blank?)&.present?
 
-      if !has_patient && !has_medical_roles
+      if !has_admin && !has_patient && !has_medical_roles
         hospital = Hospital.find(hospital_id)
-        @user.errors.add(:base, "#{hospital.name}で患者または医療従事者の役割を少なくとも1つ選択してください")
+        @user.errors.add(:base, "#{hospital.name}で患者、医療従事者、または病院管理者の役割を少なくとも1つ選択してください")
       end
     end
 
@@ -85,6 +87,7 @@ class Admin::UsersController < Admin::BaseController
       return
     end
 
+    # まずはユーザー情報を保存（current_role_idは後で設定）
     if @user.save
       # グローバル役割の割り当て（全体）
       @global_role_ids.each do |role_id|
@@ -109,13 +112,15 @@ class Admin::UsersController < Admin::BaseController
 
       @selected_hospital_ids.each do |hospital_id|
         hospital = Hospital.find(hospital_id)
+        is_hospital_admin = @hospital_admins[hospital_id.to_s].present?
 
         # 患者として選択された場合
         if @hospital_patients[hospital_id.to_s].present?
           UserHospitalRole.create!(
             user: @user,
             hospital: hospital,
-            role: patient_role
+            role: patient_role,
+            permission_level: 0  # 患者は常にpermission_level = 0
           )
         end
 
@@ -127,10 +132,17 @@ class Admin::UsersController < Admin::BaseController
             UserHospitalRole.create!(
               user: @user,
               hospital: hospital,
-              role: role
+              role: role,
+              permission_level: is_hospital_admin ? 1 : 0  # 病院管理者の場合はpermission_level = 1
             )
           end
         end
+      end
+
+      # current_role_idを適切に設定（バリデーションとコールバックをスキップ）
+      assigned_role_ids = @user.user_hospital_roles.pluck(:role_id).uniq
+      if assigned_role_ids.any?
+        @user.update_column(:current_role_id, assigned_role_ids.first)
       end
 
       redirect_to admin_user_path(@user), notice: 'ユーザーを登録しました。'
@@ -166,7 +178,8 @@ class Admin::UsersController < Admin::BaseController
           role_id: uhr.role_id,
           role_name: uhr.role.name,
           is_patient: uhr.role.name == '患者',
-          is_medical_staff: uhr.role.is_medical_staff
+          is_medical_staff: uhr.role.is_medical_staff,
+          permission_level: UserHospitalRole.permission_levels[uhr.permission_level]
         }
       end
     end
@@ -174,8 +187,6 @@ class Admin::UsersController < Admin::BaseController
     # 既存ユーザーのグローバル役割を取得
     @existing_global_role_ids = @user.user_hospital_roles.joins(:role).where(roles: { is_hospital_role: false }).pluck(:role_id).uniq
 
-    # デバッグ出力
-    puts "User #{@user.id} existing_hospital_roles: #{@existing_hospital_roles.inspect}"
   end
 
   def update
@@ -194,8 +205,10 @@ class Admin::UsersController < Admin::BaseController
     new_hospital_ids = params[:selected_hospitals]&.reject(&:blank?)&.map(&:to_i) || []
     new_global_role_ids = params[:global_role_ids] || []
     new_system_admin_selected = new_global_role_ids.include?(@global_roles.find_by(name: 'システム管理者')&.id.to_s)
+    new_hospital_admins = params[:hospital_admin] || {}
     new_hospital_patients = params[:hospital_patient] || {}
     new_hospital_medical_roles = params[:hospital_medical_roles] || {}
+
 
     # バリデーション
     if new_hospital_ids.empty?
@@ -219,7 +232,8 @@ class Admin::UsersController < Admin::BaseController
             role_id: uhr.role_id,
             role_name: uhr.role.name,
             is_patient: uhr.role.name == '患者',
-            is_medical_staff: uhr.role.is_medical_staff
+            is_medical_staff: uhr.role.is_medical_staff,
+            permission_level: UserHospitalRole.permission_levels[uhr.permission_level]
           }
         end
       end
@@ -231,14 +245,15 @@ class Admin::UsersController < Admin::BaseController
       return
     end
 
-    # 各選択された病院で患者または医療従事者の役割が選択されているかチェック
+    # 各選択された病院で患者、医療従事者、または病院管理者の役割が選択されているかチェック
     new_hospital_ids.each do |hospital_id|
+      has_admin = new_hospital_admins[hospital_id.to_s].present?
       has_patient = new_hospital_patients[hospital_id.to_s].present?
       has_medical_roles = new_hospital_medical_roles[hospital_id.to_s]&.reject(&:blank?)&.present?
 
-      if !has_patient && !has_medical_roles
+      if !has_admin && !has_patient && !has_medical_roles
         hospital = Hospital.find(hospital_id)
-        @user.errors.add(:base, "#{hospital.name}で患者または医療従事者の役割を少なくとも1つ選択してください")
+        @user.errors.add(:base, "#{hospital.name}で患者、医療従事者、または病院管理者の役割を少なくとも1つ選択してください")
       end
     end
 
@@ -262,7 +277,8 @@ class Admin::UsersController < Admin::BaseController
             role_id: uhr.role_id,
             role_name: uhr.role.name,
             is_patient: uhr.role.name == '患者',
-            is_medical_staff: uhr.role.is_medical_staff
+            is_medical_staff: uhr.role.is_medical_staff,
+            permission_level: UserHospitalRole.permission_levels[uhr.permission_level]
           }
         end
       end
@@ -274,6 +290,7 @@ class Admin::UsersController < Admin::BaseController
       return
     end
 
+    # まずはユーザー情報を保存（current_role_idは後で設定）
     if @user.update(user_params)
       # 既存の病院関連をすべて削除（システム管理者関連以外）
       @user.user_hospital_roles.joins(:hospital).where.not(hospitals: { name: 'システム管理' }).destroy_all
@@ -304,13 +321,15 @@ class Admin::UsersController < Admin::BaseController
 
       new_hospital_ids.each do |hospital_id|
         hospital = Hospital.find(hospital_id)
+        is_hospital_admin = new_hospital_admins[hospital_id.to_s].present?
 
         # 患者として選択された場合
         if new_hospital_patients[hospital_id.to_s].present?
           UserHospitalRole.create!(
             user: @user,
             hospital: hospital,
-            role: patient_role
+            role: patient_role,
+            permission_level: 0  # 患者は常にpermission_level = 0
           )
         end
 
@@ -322,7 +341,8 @@ class Admin::UsersController < Admin::BaseController
             UserHospitalRole.create!(
               user: @user,
               hospital: hospital,
-              role: role
+              role: role,
+              permission_level: is_hospital_admin ? 1 : 0  # 病院管理者の場合はpermission_level = 1
             )
           end
         end
@@ -333,25 +353,10 @@ class Admin::UsersController < Admin::BaseController
                            .where.not(hospital_id: new_hospital_ids)
                            .destroy_all
 
-      # current_role_idが削除された役割の場合、新しい役割に更新
-      all_new_role_ids = []
-      if new_system_admin_selected
-        system_admin_role = @global_roles.find_by(name: 'システム管理者')
-        all_new_role_ids << system_admin_role.id if system_admin_role
-      end
-      new_hospital_ids.each do |hospital_id|
-        if new_hospital_patients[hospital_id.to_s].present?
-          all_new_role_ids << patient_role.id
-        end
-        if new_hospital_medical_roles[hospital_id.to_s].present?
-          medical_role_ids = new_hospital_medical_roles[hospital_id.to_s]&.reject(&:blank?)&.map(&:to_i) || []
-          all_new_role_ids.concat(medical_role_ids)
-        end
-      end
-      all_new_role_ids.uniq!
-
-      unless all_new_role_ids.include?(@user.current_role_id)
-        @user.update_attribute(:current_role_id, all_new_role_ids.first)
+      # current_role_idを適切に設定（バリデーションとコールバックをスキップ）
+      assigned_role_ids = @user.user_hospital_roles.pluck(:role_id).uniq
+      if assigned_role_ids.any?
+        @user.update_column(:current_role_id, assigned_role_ids.first)
       end
 
       redirect_to admin_user_path(@user), notice: 'ユーザー情報を更新しました。'
@@ -375,7 +380,8 @@ class Admin::UsersController < Admin::BaseController
             role_id: uhr.role_id,
             role_name: uhr.role.name,
             is_patient: uhr.role.name == '患者',
-            is_medical_staff: uhr.role.is_medical_staff
+            is_medical_staff: uhr.role.is_medical_staff,
+            permission_level: UserHospitalRole.permission_levels[uhr.permission_level]
           }
         end
       end
@@ -399,10 +405,6 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :password_confirmation).tap do |p|
-      # current_role_idを最初の選択された役割に設定
-      selected_role_ids = params[:role_ids]&.reject(&:blank?)&.map(&:to_i) || []
-      p[:current_role_id] = selected_role_ids.first if selected_role_ids.any?
-    end
+    params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 end

@@ -147,6 +147,11 @@
         <input type="hidden" name="selected_hospitals[]" value="${selectedHospitalId}">
         <small class="text-muted mb-2 d-block">この病院での役割を選択してください：</small>
         <div class="form-check mb-2">
+          <input type="checkbox" name="hospital_admin[${selectedHospitalId}]" value="1" id="admin_${selectedHospitalId}" class="form-check-input">
+          <label for="admin_${selectedHospitalId}" class="form-check-label fw-bold">病院管理者</label>
+          <small class="text-muted d-block ms-4">この病院の管理者権限を持ちます</small>
+        </div>
+        <div class="form-check mb-2">
           <input type="checkbox" name="hospital_patient[${selectedHospitalId}]" value="1" id="patient_${selectedHospitalId}" class="form-check-input">
           <label for="patient_${selectedHospitalId}" class="form-check-label fw-bold">患者</label>
           <small class="text-muted d-block ms-4">患者としての役割が割り当てられます</small>
@@ -204,6 +209,9 @@
     // 患者役割があるかチェック（重複を避けるため、roles配列内で一意にチェック）
     const hasPatientRole = hospitalData.roles.some(role => role.is_patient);
 
+    // 病院管理者役割があるかチェック（医療従事者の役割でpermission_level == 1）
+    const hasAdminRole = hospitalData.roles.some(role => role.is_medical_staff && role.permission_level === 1);
+
     // 医療従事者役割を取得（重複を避けるため、ユニークなrole_idのみ）
     const medicalStaffRoles = [];
     hospitalData.roles.forEach(role => {
@@ -231,6 +239,11 @@
       </div>
       <input type="hidden" name="selected_hospitals[]" value="${hospitalId}">
       <small class="text-muted mb-2 d-block">この病院での役割を選択してください：</small>
+      <div class="form-check mb-2">
+        <input type="checkbox" name="hospital_admin[${hospitalId}]" value="1" id="admin_${hospitalId}" class="form-check-input" ${hasAdminRole ? 'checked' : ''}>
+        <label for="admin_${hospitalId}" class="form-check-label fw-bold">病院管理者</label>
+        <small class="text-muted d-block ms-4">この病院の管理者権限を持ちます</small>
+      </div>
       <div class="form-check mb-2">
         <input type="checkbox" name="hospital_patient[${hospitalId}]" value="1" id="patient_${hospitalId}" class="form-check-input" ${hasPatientRole ? 'checked' : ''}>
         <label for="patient_${hospitalId}" class="form-check-label fw-bold">患者</label>
