@@ -57,7 +57,9 @@
                 <td>
                   <% user_roles = user.user_hospital_roles.includes(:role).distinct %>
                   <% user_roles.each do |user_role| %>
-                    <% if !user_role.role.is_hospital_role %>
+                    <% if user_role.permission_level == 1 %>
+                      <span class="badge bg-warning"><%= user_role.role.name %></span>
+                    <% elsif !user_role.role.is_hospital_role %>
                       <span class="badge bg-danger"><%= user_role.role.name %></span>
                     <% elsif user_role.role.is_hospital_role && !user_role.role.is_medical_staff %>
                       <span class="badge bg-info"><%= user_role.role.name %></span>

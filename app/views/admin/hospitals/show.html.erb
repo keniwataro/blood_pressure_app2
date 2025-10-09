@@ -1,0 +1,63 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">病院詳細</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <h2 class="text-primary mb-3"><%= @hospital.name %></h2>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong class="text-muted">住所</strong>
+              <p class="mt-1"><%= simple_format(@hospital.address) %></p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <% if @hospital.phone_number.present? %>
+              <div class="mb-3">
+                <strong class="text-muted">電話番号</strong>
+                <p class="mt-1">
+                  <a href="tel:<%= @hospital.phone_number %>" class="text-decoration-none">
+                    <i class="bi bi-telephone"></i> <%= @hospital.phone_number %>
+                  </a>
+                </p>
+              </div>
+            <% end %>
+
+            <% if @hospital.website.present? %>
+              <div class="mb-3">
+                <strong class="text-muted">ウェブサイト</strong>
+                <p class="mt-1">
+                  <%= link_to @hospital.website, @hospital.website,
+                             target: "_blank",
+                             class: "text-decoration-none",
+                             rel: "noopener noreferrer" %>
+                  <i class="bi bi-box-arrow-up-right ms-1"></i>
+                </p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <%= link_to "← 一覧に戻る", admin_hospitals_path, class: "btn btn-secondary" %>
+            <div class="d-flex gap-2">
+              <%= link_to "編集", edit_admin_hospital_path(@hospital), class: "btn btn-primary" %>
+              <%= button_to "削除", admin_hospital_path(@hospital),
+                          method: :delete,
+                          form: { data: { turbo_confirm: "本当に削除しますか？" } },
+                          class: "btn btn-danger" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

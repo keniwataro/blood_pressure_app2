@@ -6,6 +6,14 @@ Rails.application.routes.draw do
   namespace :admin do
     root 'dashboard#index'
     resources :users, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+    resources :hospitals do
+      collection do
+        post 'confirm_new'
+      end
+      member do
+        post 'confirm_edit'
+      end
+    end
   end
   
   # 医療従事者用の画面
@@ -51,17 +59,7 @@ Rails.application.routes.draw do
       post 'confirm_edit'
     end
   end
-  
-  # 病院のRESTfulルート
-  resources :hospitals do
-    collection do
-      post 'confirm_new'
-    end
-    member do
-      post 'confirm_edit'
-    end
-  end
-  
+
   # プロフィール管理
   resource :profile, only: [:show, :edit, :update] do
     post 'confirm', on: :collection

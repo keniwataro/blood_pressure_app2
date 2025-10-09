@@ -1,0 +1,50 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h1 class="h2 mb-4">病院登録確認</h1>
+
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h4 class="mb-0">以下の内容で登録します。よろしいですか？</h4>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @hospital, url: admin_hospitals_path, local: true do |f| %>
+          <%= f.hidden_field :name %>
+          <%= f.hidden_field :address %>
+          <%= f.hidden_field :phone_number %>
+          <%= f.hidden_field :website %>
+
+          <div class="mb-3">
+            <strong class="text-muted">病院名</strong>
+            <p class="h5"><%= @hospital.name %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">住所</strong>
+            <p><%= simple_format(@hospital.address) %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">電話番号</strong>
+            <p><%= @hospital.phone_number.present? ? @hospital.phone_number : '未設定' %></p>
+          </div>
+
+          <div class="mb-3">
+            <strong class="text-muted">ウェブサイト</strong>
+            <p>
+              <% if @hospital.website.present? %>
+                <%= link_to @hospital.website, @hospital.website, target: "_blank", rel: "noopener noreferrer" %>
+              <% else %>
+                未設定
+              <% end %>
+            </p>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+            <%= link_to "← 戻って修正", new_admin_hospital_path, class: "btn btn-secondary" %>
+            <%= f.submit "登録する", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
