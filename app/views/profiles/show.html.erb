@@ -27,7 +27,7 @@
           <p><%= @user.created_at.strftime("%Y年%m月%d日") %></p>
         </div>
 
-        <% unless @user.medical_staff? %>
+        <% unless @user.medical_staff? || @user.system_admin? %>
           <hr>
 
           <div class="row text-center">
