@@ -129,14 +129,15 @@ if Rails.env.development?
     name: 'テスト患者',
     email: 'patient@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: patient_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  patient_user_hospital_role = UserHospitalRole.create!(
     user: patient_user,
     hospital: hospital1,
     role: patient_role
   )
+  # current_hospital_role_idを設定
+  patient_user.update(current_hospital_role_id: patient_user_hospital_role.id)
   puts "患者ユーザー作成: #{patient_user.name} (ユーザーID: #{patient_user.user_id}) - 役割: 患者"
 
   # 2. 医師（管理者）
@@ -144,15 +145,16 @@ if Rails.env.development?
     name: '山田太郎',
     email: 'doctor@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: doctor_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  doctor_user_hospital_role = UserHospitalRole.create!(
     user: doctor_user,
     hospital: hospital1,
     role: doctor_role,
     permission_level: :administrator
   )
+  # current_hospital_role_idを設定
+  doctor_user.update(current_hospital_role_id: doctor_user_hospital_role.id)
   puts "医師ユーザー作成: #{doctor_user.name} (ユーザーID: #{doctor_user.user_id}) - 役割: 医師 (管理者)"
 
   # 3. 看護師（一般）
@@ -160,15 +162,16 @@ if Rails.env.development?
     name: '佐藤花子',
     email: 'nurse@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: nurse_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  nurse_user_hospital_role = UserHospitalRole.create!(
     user: nurse_user,
     hospital: hospital1,
     role: nurse_role,
     permission_level: :general
   )
+  # current_hospital_role_idを設定
+  nurse_user.update(current_hospital_role_id: nurse_user_hospital_role.id)
   puts "看護師ユーザー作成: #{nurse_user.name} (ユーザーID: #{nurse_user.user_id}) - 役割: 看護師 (一般)"
 
   # 4. 医療事務（一般）
@@ -176,15 +179,16 @@ if Rails.env.development?
     name: '鈴木一郎',
     email: 'clerk@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: clerk_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  clerk_user_hospital_role = UserHospitalRole.create!(
     user: clerk_user,
     hospital: hospital1,
     role: clerk_role,
     permission_level: :general
   )
+  # current_hospital_role_idを設定
+  clerk_user.update(current_hospital_role_id: clerk_user_hospital_role.id)
   puts "医療事務ユーザー作成: #{clerk_user.name} (ユーザーID: #{clerk_user.user_id}) - 役割: 医療事務 (一般)"
 
   # 5. 複数の役割を持つユーザー（医師 + 看護師）
@@ -192,10 +196,9 @@ if Rails.env.development?
     name: '田中次郎',
     email: 'multi1@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: doctor_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  doctor_role_uhr = UserHospitalRole.create!(
     user: multi_role_user1,
     hospital: hospital1,
     role: doctor_role,
@@ -207,6 +210,8 @@ if Rails.env.development?
     role: nurse_role,
     permission_level: :general
   )
+  # current_hospital_role_idを設定（最初の役割）
+  multi_role_user1.update(current_hospital_role_id: doctor_role_uhr.id)
   puts "複数役割ユーザー作成: #{multi_role_user1.name} (ユーザーID: #{multi_role_user1.user_id}) - 役割: 医師 + 看護師 (現在: 医師)"
 
   # 6. 複数の役割を持つユーザー（患者 + 医療事務）
@@ -214,10 +219,9 @@ if Rails.env.development?
     name: '高橋美咲',
     email: 'multi2@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: patient_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  patient_role_uhr = UserHospitalRole.create!(
     user: multi_role_user2,
     hospital: hospital1,
     role: patient_role
@@ -228,6 +232,8 @@ if Rails.env.development?
     role: clerk_role,
     permission_level: :general
   )
+  # current_hospital_role_idを設定（最初の役割）
+  multi_role_user2.update(current_hospital_role_id: patient_role_uhr.id)
   puts "複数役割ユーザー作成: #{multi_role_user2.name} (ユーザーID: #{multi_role_user2.user_id}) - 役割: 患者 + 医療事務 (現在: 患者)"
 
   # 7. 複数の役割を持つユーザー（医師 + 薬剤師 + 患者）
@@ -235,10 +241,9 @@ if Rails.env.development?
     name: '伊藤健一',
     email: 'multi3@example.com',
     password: 'password',
-    password_confirmation: 'password',
-    current_role_id: doctor_role.id
+    password_confirmation: 'password'
   )
-  UserHospitalRole.create!(
+  doctor_role_uhr3 = UserHospitalRole.create!(
     user: multi_role_user3,
     hospital: hospital1,
     role: doctor_role,
@@ -252,9 +257,11 @@ if Rails.env.development?
   )
   UserHospitalRole.create!(
     user: multi_role_user3,
-    hospital: hospital1,
+    hospital: hospital2,
     role: patient_role
   )
+  # current_hospital_role_idを設定（最初の役割）
+  multi_role_user3.update(current_hospital_role_id: doctor_role_uhr3.id)
   puts "複数役割ユーザー作成: #{multi_role_user3.name} (ユーザーID: #{multi_role_user3.user_id}) - 役割: 医師 + 薬剤師 + 患者 (現在: 医師)"
 
   # 血圧記録のサンプルデータ作成（患者ユーザー用）
@@ -352,21 +359,30 @@ if Rails.env.development?
     admin_user.assign_attributes(
       name: 'システム管理者',
       password: 'admin123',
-      password_confirmation: 'admin123',
-      current_role_id: system_admin_role.id
+      password_confirmation: 'admin123'
     )
     admin_user.save!
 
     # システム管理者をシステム管理病院に所属させる
-    UserHospitalRole.find_or_create_by!(
+    admin_user_hospital_role = UserHospitalRole.find_or_create_by!(
       user: admin_user,
       hospital: system_hospital,
       role: system_admin_role
     )
+    # current_hospital_role_idを設定
+    admin_user.update(current_hospital_role_id: admin_user_hospital_role.id)
 
     puts "システム管理者アカウント作成完了: #{admin_user.email} (パスワード: admin123)"
   else
     puts "システム管理者アカウントは既に存在します: #{admin_user.email}"
+    # 既存のユーザーのcurrent_hospital_role_idを設定
+    if admin_user.current_hospital_role_id.nil?
+      admin_user_hospital_role = admin_user.user_hospital_roles.first
+      if admin_user_hospital_role
+        admin_user.update(current_hospital_role_id: admin_user_hospital_role.id)
+        puts "既存システム管理者のcurrent_hospital_role_idを設定しました"
+      end
+    end
 
     # 既存のシステム管理者もシステム管理病院に所属させる
     unless admin_user.user_hospital_roles.exists?(hospital: system_hospital, role: system_admin_role)

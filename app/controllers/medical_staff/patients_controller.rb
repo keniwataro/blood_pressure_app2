@@ -87,14 +87,18 @@ class MedicalStaff::PatientsController < ApplicationController
   def create
     @patient = User.new(patient_params)
     @patient_role = Role.find_by(name: '患者')
-    
+
+    # 患者として病院に登録
+    UserHospitalRole.create!(
+      user: @patient,
+      hospital: @hospital,
+      role: @patient_role
+    )
+
+    # current_hospital_role_idを設定
+    @patient.current_hospital_role_id = @patient.user_hospital_roles.first.id
+
     if @patient.save
-      # 患者として病院に登録
-      UserHospitalRole.create!(
-        user: @patient,
-        hospital: @hospital,
-        role: @patient_role
-      )
       
       # 担当スタッフの設定
       if params[:staff_ids].present?
@@ -120,24 +124,24 @@ class MedicalStaff::PatientsController < ApplicationController
   end
 
   def confirm_edit
-    # current_role_idを保持してから属性を更新
-    original_current_role_id = @patient.current_role_id
-    
+    # current_hospital_role_idを保持してから属性を更新
+    original_current_hospital_role_id = @patient.current_hospital_role_id
+
     # patient_update_paramsを一時的に保存
     update_params = patient_update_params
-    
+
     # assign_attributesを実行
     @patient.assign_attributes(update_params)
-    
-    # current_role_idを元に戻す（患者編集では役割は変更しない）
-    @patient.current_role_id = original_current_role_id
+
+    # current_hospital_role_idを元に戻す（患者編集では役割は変更しない）
+    @patient.current_hospital_role_id = original_current_hospital_role_id
     
     @staff_members = @hospital.medical_staff.order(:name)
     @selected_staff_ids = params[:staff_ids]&.reject(&:blank?)&.map(&:to_i) || []
     
-    # バリデーションを実行するが、current_role_idのエラーは無視
+    # バリデーションを実行するが、current_hospital_role_idのエラーは無視
     @patient.valid?
-    @patient.errors.delete(:current_role_id)
+    @patient.errors.delete(:current_hospital_role_id)
     
     if @patient.errors.empty?
       render :confirm_edit
@@ -148,16 +152,16 @@ class MedicalStaff::PatientsController < ApplicationController
   end
 
   def update
-    # current_role_idを保持してから更新
-    original_current_role_id = @patient.current_role_id
+    # current_hospital_role_idを保持してから更新
+    original_current_hospital_role_id = @patient.current_hospital_role_id
 
     # current_role_must_be_assignedバリデーションを一時的にスキップ
     User.skip_callback(:validate, :current_role_must_be_assigned)
 
     begin
-      if @patient.update(patient_update_params.except(:current_role_id))
-        # current_role_idを直接更新
-        @patient.current_role_id = original_current_role_id
+      if @patient.update(patient_update_params.except(:current_hospital_role_id))
+        # current_hospital_role_idを直接更新
+        @patient.current_hospital_role_id = original_current_hospital_role_id
         @patient.save(validate: false)
 
         # 担当スタッフの更新
@@ -192,6 +196,8 @@ class MedicalStaff::PatientsController < ApplicationController
   end
 
   def destroy
+    # current_hospital_role_idが削除されるuser_hospital_rolesを参照している場合、nilに設定
+    @patient.update_column(:current_hospital_role_id, nil)
     @patient.destroy
     redirect_to medical_staff_patients_path, notice: "#{@patient.name} を削除しました。"
   end

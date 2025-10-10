@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_08_063506) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_09_091401) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -81,8 +81,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_08_063506) do
     t.datetime "updated_at", null: false
     t.string "name"
     t.string "user_id"
-    t.bigint "current_role_id", null: false
-    t.index ["current_role_id"], name: "index_users_on_current_role_id"
+    t.bigint "current_hospital_role_id"
+    t.index ["current_hospital_role_id"], name: "index_users_on_current_hospital_role_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["user_id"], name: "index_users_on_user_id", unique: true
@@ -95,5 +95,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_08_063506) do
   add_foreign_key "user_hospital_roles", "hospitals"
   add_foreign_key "user_hospital_roles", "roles"
   add_foreign_key "user_hospital_roles", "users"
-  add_foreign_key "users", "roles", column: "current_role_id"
+  add_foreign_key "users", "user_hospital_roles", column: "current_hospital_role_id", name: "fk_rails_current_hospital_role_id"
 end

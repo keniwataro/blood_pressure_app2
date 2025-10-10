@@ -32,13 +32,13 @@
 
           <div class="mb-3">
             <%= f.label :password, "初期パスワード", class: "form-label" %>
-            <%= f.password_field :password, class: "form-control", placeholder: "8文字以上", required: true %>
+            <%= f.password_field :password, class: "form-control", placeholder: "6文字以上", required: true %>
             <div class="form-text">患者に初期パスワードを伝えてください</div>
           </div>
 
           <div class="mb-3">
             <%= f.label :password_confirmation, "パスワード（確認）", class: "form-label" %>
-            <%= f.password_field :password_confirmation, class: "form-control", placeholder: "8文字以上", required: true %>
+            <%= f.password_field :password_confirmation, class: "form-control", placeholder: "6文字以上", required: true %>
           </div>
 
           <hr>

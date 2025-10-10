@@ -2,28 +2,28 @@
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  name                   :string
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  current_role_id        :bigint           not null
-#  user_id                :string
+#  id                       :bigint           not null, primary key
+#  email                    :string           default(""), not null
+#  encrypted_password       :string           default(""), not null
+#  name                     :string
+#  remember_created_at      :datetime
+#  reset_password_sent_at   :datetime
+#  reset_password_token     :string
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  current_hospital_role_id :bigint
+#  user_id                  :string
 #
 # Indexes
 #
-#  index_users_on_current_role_id       (current_role_id)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_user_id               (user_id) UNIQUE
+#  index_users_on_current_hospital_role_id  (current_hospital_role_id)
+#  index_users_on_email                     (email) UNIQUE
+#  index_users_on_reset_password_token      (reset_password_token) UNIQUE
+#  index_users_on_user_id                   (user_id) UNIQUE
 #
 # Foreign Keys
 #
-#  fk_rails_...  (current_role_id => roles.id)
+#  fk_rails_current_hospital_role_id  (current_hospital_role_id => user_hospital_roles.id)
 #
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
@@ -37,7 +37,7 @@ class User < ApplicationRecord
   has_many :user_hospital_roles, dependent: :destroy
   has_many :hospitals, through: :user_hospital_roles
   has_many :roles, through: :user_hospital_roles
-  belongs_to :current_role, class_name: 'Role', optional: true
+  belongs_to :current_hospital_role, class_name: 'UserHospitalRole', optional: true
   
   # 患者としての担当スタッフ関連
   has_many :patient_staff_assignments_as_patient, 
@@ -61,12 +61,11 @@ class User < ApplicationRecord
   validates :name, presence: true, length: { maximum: 50 }
   validates :user_id, presence: true, uniqueness: true, format: { with: /\A\d+\z/, message: "は数字のみで入力してください" }
   validates :email, presence: true, uniqueness: true
-  validates :current_role_id, presence: true
+  # validates :current_hospital_role_id, presence: true # current_role_must_be_assignedでチェック
   validate :current_role_must_be_assigned
   
   # コールバック
   before_validation :generate_user_id, on: :create
-  before_validation :set_default_current_role, on: :create
   attr_readonly :user_id
   
   # メールアドレスのバリデーションをカスタマイズ（Deviseのデフォルトを上書き）
@@ -143,25 +142,34 @@ class User < ApplicationRecord
   
   # 現在の役割が医療従事者かチェック
   def current_role_medical_staff?
-    current_role&.is_medical_staff == true
+    current_hospital_role&.role&.is_medical_staff == true
   end
-  
+
   # 現在の役割が患者かチェック
   def current_role_patient?
-    current_role&.is_medical_staff == false
+    current_hospital_role&.role&.is_medical_staff == false
+  end
+
+  # 現在の役割を取得（後方互換性のため）
+  def current_role
+    current_hospital_role&.role
   end
   
   # 役割を切り替え
   def switch_to_role!(role_id)
     role = available_roles.find_by(id: role_id)
     if role
-      update(current_role_id: role_id)
+      # 指定されたrole_idを持つuser_hospital_rolesレコードのIDを設定
+      user_hospital_role = user_hospital_roles.find_by(role_id: role_id)
+      if user_hospital_role
+        update_column(:current_hospital_role_id, user_hospital_role.id)
+      end
     end
   end
   
   # システム管理者かチェック
   def system_admin?
-    current_role&.id == 1 && current_role&.name == 'システム管理者'
+    current_hospital_role&.role_id == 1 && current_hospital_role&.role&.name == 'システム管理者'
   end
   
   private
@@ -176,26 +184,27 @@ class User < ApplicationRecord
     end
   end
   
-  def set_default_current_role
-    return if current_role_id.present?
-    
-    # デフォルトは患者の役割
-    patient_role = Role.find_by(name: '患者')
-    self.current_role_id = patient_role&.id if patient_role
-  end
   
   # current_role_idが自分の持つ役割の中にあるかチェック
   def current_role_must_be_assigned
-    return if current_role_id.blank?
-    
+    return if current_hospital_role_id.blank?
+
     # 新規作成時はスキップ（まだuser_hospital_rolesが作成されていないため）
     return if new_record?
-    
+
+    # current_hospital_role_idから該当のuser_hospital_roleレコードを取得
+    current_user_hospital_role = user_hospital_roles.find_by(id: current_hospital_role_id)
+
+    unless current_user_hospital_role
+      errors.add(:current_hospital_role_id, "は自分に割り当てられた役割ではありません")
+      return
+    end
+
     # 自分が持っている役割のIDリストを取得
     assigned_role_ids = roles.pluck(:id)
-    
-    unless assigned_role_ids.include?(current_role_id)
-      errors.add(:current_role_id, "は自分に割り当てられた役割ではありません")
+
+    unless assigned_role_ids.include?(current_user_hospital_role.role_id)
+      errors.add(:current_hospital_role_id, "は自分に割り当てられた役割ではありません")
     end
   end
 end

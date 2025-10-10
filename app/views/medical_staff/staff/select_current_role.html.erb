@@ -8,7 +8,7 @@
       </div>
       <div class="card-body">
         <div class="alert alert-warning">
-          <strong>注意:</strong> 現在設定されている役割「<%= @staff_member.current_role&.name %>」が削除されるため、新しい役割を選択してください。
+          <strong>注意:</strong> 現在設定されている役割「<%= @staff_member.current_hospital_role&.role&.name %>」が削除されるため、新しい役割を選択してください。
         </div>
 
         <%= form_with(model: @staff_member, url: confirm_with_role_medical_staff_staff_path(@staff_member), method: :post, data: { turbo: false }) do |f| %>

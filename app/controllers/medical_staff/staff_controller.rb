@@ -60,33 +60,33 @@ class MedicalStaff::StaffController < ApplicationController
     @staff_member = User.new(staff_params)
     @roles = Role.all # 全ての役割（患者も含む）
     permission_level = params[:user][:permission_level] || 'general'
-    
-    if @staff_member.save
-      # 選択された役割を全て登録
-      if params[:role_ids].present?
-        first_role_id = nil
-        params[:role_ids].reject(&:blank?).each_with_index do |role_id, index|
-          role = Role.find(role_id)
-          # 患者の役割にはpermission_levelを設定しない
-          if role.is_medical_staff?
-            UserHospitalRole.create!(
-              user: @staff_member,
-              hospital: @hospital,
-              role_id: role_id,
-              permission_level: permission_level
-            )
-          else
-            UserHospitalRole.create!(
-              user: @staff_member,
-              hospital: @hospital,
-              role_id: role_id
-            )
-          end
-          first_role_id = role_id if index == 0
+
+    # 選択された役割を全て登録
+    if params[:role_ids].present?
+      params[:role_ids].reject(&:blank?).each do |role_id|
+        role = Role.find(role_id)
+        # 患者の役割にはpermission_levelを設定しない
+        if role.is_medical_staff?
+          UserHospitalRole.create!(
+            user: @staff_member,
+            hospital: @hospital,
+            role_id: role_id,
+            permission_level: permission_level
+          )
+        else
+          UserHospitalRole.create!(
+            user: @staff_member,
+            hospital: @hospital,
+            role_id: role_id
+          )
         end
-        # 最初の役割をcurrent_roleに設定
-        @staff_member.update(current_role_id: first_role_id) if first_role_id
       end
+      # 最初のuser_hospital_roleをcurrent_hospital_roleに設定
+      first_user_hospital_role = @staff_member.user_hospital_roles.where(hospital_id: @hospital.id).first
+      @staff_member.current_hospital_role_id = first_user_hospital_role.id if first_user_hospital_role
+    end
+
+    if @staff_member.save
       redirect_to medical_staff_staff_path(@staff_member), notice: 'スタッフを登録しました。'
     else
       render :new, status: :unprocessable_entity
@@ -103,10 +103,10 @@ class MedicalStaff::StaffController < ApplicationController
   end
 
   def confirm_edit
-    # current_role_idを保持してから属性を更新
-    original_current_role_id = @staff_member.current_role_id
+    # current_hospital_roleを保持してから属性を更新
+    original_current_hospital_role = @staff_member.current_hospital_role
     @staff_member.assign_attributes(staff_update_params)
-    @staff_member.current_role_id = original_current_role_id
+    @staff_member.current_hospital_role_id = original_current_hospital_role&.id
     
     @roles = Role.all
     @selected_role_ids = params[:role_ids]&.reject(&:blank?)&.map(&:to_i) || []
@@ -161,7 +161,7 @@ class MedicalStaff::StaffController < ApplicationController
     end
     
     # 現在の役割が削除される場合は、役割選択画面へ
-    if @selected_role_ids.present? && !@selected_role_ids.include?(original_current_role_id)
+    if original_current_hospital_role && @selected_role_ids.present? && !@selected_role_ids.include?(original_current_hospital_role.role_id)
       @available_roles = @roles.where(id: @selected_role_ids)
       render :select_current_role
       return
@@ -178,19 +178,24 @@ class MedicalStaff::StaffController < ApplicationController
   end
   
   def confirm_with_role
-    # 選択された新しいcurrent_role_idを設定
+    # 選択された新しいcurrent_role_idを取得（RoleのID）
     new_current_role_id = params[:new_current_role_id].to_i
-    
+
+    # 対応するUserHospitalRoleを取得
+    new_user_hospital_role = @staff_member.user_hospital_roles.where(hospital_id: @hospital.id, role_id: new_current_role_id).first
+
     @staff_member.assign_attributes(staff_update_params)
-    @staff_member.current_role_id = new_current_role_id
-    
+    @staff_member.current_hospital_role_id = new_user_hospital_role&.id
+
     @roles = Role.all
     @selected_role_ids = params[:role_ids]&.reject(&:blank?)&.map(&:to_i) || []
     @permission_level = params[:user][:permission_level] || 'general'
-    
+
     # 新しいcurrent_role_idが選択された役割の中に含まれているかチェック
-    unless @selected_role_ids.include?(new_current_role_id)
+    selected_user_hospital_roles = @staff_member.user_hospital_roles.where(hospital_id: @hospital.id, role_id: @selected_role_ids)
+    unless new_user_hospital_role && selected_user_hospital_roles.exists?(id: new_user_hospital_role.id)
       flash.now[:alert] = '選択された現在の役割が、設定する役割に含まれていません。'
+      @available_user_hospital_roles = selected_user_hospital_roles
       @available_roles = @roles.where(id: @selected_role_ids)
       render :select_current_role, status: :unprocessable_entity
       return
@@ -198,8 +203,8 @@ class MedicalStaff::StaffController < ApplicationController
     
     # 確認画面では基本的なバリデーションのみ実行（current_role_idのバリデーションはスキップ）
     @staff_member.valid?
-    # current_role_idのエラーを削除（確認画面では役割が未更新のため）
-    @staff_member.errors.delete(:current_role_id)
+    # current_hospital_role_idのエラーを削除（確認画面では役割が未更新のため）
+    @staff_member.errors.delete(:current_hospital_role_id)
     
     if @staff_member.errors.empty?
       render :confirm_edit
@@ -221,19 +226,19 @@ class MedicalStaff::StaffController < ApplicationController
     @patient_reassignments = params[:patient_reassignments] || {}
     
     # 現在の役割が削除される場合は、役割選択画面へ
-    original_current_role_id = @staff_member.current_role_id
-    if @selected_role_ids.present? && !@selected_role_ids.include?(original_current_role_id)
+    original_current_hospital_role = @staff_member.current_hospital_role
+    if original_current_hospital_role && @selected_role_ids.present? && !@selected_role_ids.include?(original_current_hospital_role.role_id)
       @available_roles = @roles.where(id: @selected_role_ids)
       render :select_current_role
       return
     end
     
-    # current_role_idを保持
-    @staff_member.current_role_id = original_current_role_id
+    # current_hospital_role_idを保持
+    @staff_member.current_hospital_role_id = original_current_hospital_role.id
     
     # 確認画面では基本的なバリデーションのみ実行
     @staff_member.valid?
-    @staff_member.errors.delete(:current_role_id)
+    @staff_member.errors.delete(:current_hospital_role_id)
     
     if @staff_member.errors.empty?
       render :confirm_edit
@@ -273,7 +278,26 @@ class MedicalStaff::StaffController < ApplicationController
       
       # 削除する役割
       role_ids_to_remove = current_role_ids - new_role_ids
-      current_roles.where(role_id: role_ids_to_remove).destroy_all
+
+      # 削除されるUserHospitalRoleのIDを取得
+      user_hospital_roles_to_remove = current_roles.where(role_id: role_ids_to_remove)
+      user_hospital_role_ids_to_remove = user_hospital_roles_to_remove.pluck(:id)
+
+      # current_hospital_role_idが削除される場合、変更する
+      if @staff_member.current_hospital_role_id && user_hospital_role_ids_to_remove.include?(@staff_member.current_hospital_role_id)
+        # 残りの役割から新しいcurrent_hospital_role_idを選択
+        remaining_roles = current_roles.where.not(id: user_hospital_role_ids_to_remove)
+        if remaining_roles.exists?
+          new_current_role = remaining_roles.first
+          @staff_member.update_column(:current_hospital_role_id, new_current_role.id)
+        else
+          # 役割がなくなる場合はnilに設定
+          @staff_member.update_column(:current_hospital_role_id, nil)
+        end
+      end
+
+      # 役割を削除
+      user_hospital_roles_to_remove.destroy_all
       
       # 追加する役割
       role_ids_to_add = new_role_ids - current_role_ids
@@ -322,6 +346,8 @@ class MedicalStaff::StaffController < ApplicationController
   end
 
   def destroy
+    # current_hospital_role_idが削除されるuser_hospital_rolesを参照している場合、nilに設定
+    @staff_member.update_column(:current_hospital_role_id, nil)
     @staff_member.destroy
     redirect_to medical_staff_staff_index_path, notice: "#{@staff_member.name} を削除しました。"
   end

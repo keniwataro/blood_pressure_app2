@@ -69,8 +69,8 @@ class Admin::UsersController < Admin::BaseController
     @hospital_patients = params[:hospital_patient] || {}
     @hospital_medical_roles = params[:hospital_medical_roles] || {}
 
-    # バリデーション
-    if @selected_hospital_ids.empty?
+    # バリデーション（システム管理者の場合は病院の選択が不要）
+    if @selected_hospital_ids.empty? && !@system_admin_selected
       @user.errors.add(:base, '少なくとも1つの病院を選択してください')
       render :new, status: :unprocessable_entity
       return
@@ -93,7 +93,7 @@ class Admin::UsersController < Admin::BaseController
       return
     end
 
-    # まずはユーザー情報を保存（current_role_idは後で設定）
+    # まずはユーザー情報を保存（current_hospital_role_idは後で設定）
     if @user.save
       # グローバル役割の割り当て（全体）
       @global_role_ids.each do |role_id|
@@ -145,10 +145,11 @@ class Admin::UsersController < Admin::BaseController
         end
       end
 
-      # current_role_idを適切に設定（バリデーションとコールバックをスキップ）
-      assigned_role_ids = @user.user_hospital_roles.pluck(:role_id).uniq
-      if assigned_role_ids.any?
-        @user.update_column(:current_role_id, assigned_role_ids.first)
+      # current_hospital_role_idを適切に設定（バリデーションとコールバックをスキップ）
+      # 最初のuser_hospital_roleのIDを設定
+      first_user_hospital_role = @user.user_hospital_roles.first
+      if first_user_hospital_role
+        @user.update_column(:current_hospital_role_id, first_user_hospital_role.id)
       end
 
       redirect_to admin_user_path(@user), notice: 'ユーザーを登録しました。'
@@ -216,8 +217,8 @@ class Admin::UsersController < Admin::BaseController
     new_hospital_medical_roles = params[:hospital_medical_roles] || {}
 
 
-    # バリデーション
-    if new_hospital_ids.empty?
+    # バリデーション（システム管理者の場合は病院の選択が不要）
+    if new_hospital_ids.empty? && !new_system_admin_selected
       @user.errors.add(:base, '少なくとも1つの病院を選択してください')
       @staff_roles = @user.user_hospital_roles.includes(:role, :hospital)
       @current_global_role_ids = @user.user_hospital_roles.joins(:role).where(roles: { is_hospital_role: false }).pluck(:role_id).uniq
@@ -296,8 +297,11 @@ class Admin::UsersController < Admin::BaseController
       return
     end
 
-    # まずはユーザー情報を保存（current_role_idは後で設定）
+    # まずはユーザー情報を保存（current_hospital_role_idは後で設定）
     if @user.update(user_params)
+      # 既存の病院関連を削除する前に、current_hospital_role_idを一時的にnilに設定（外部キー制約違反を防ぐ）
+      @user.update_column(:current_hospital_role_id, nil)
+
       # 既存の病院関連をすべて削除（システム管理者関連以外）
       @user.user_hospital_roles.joins(:hospital).where.not(hospitals: { name: 'システム管理' }).destroy_all
 
@@ -359,10 +363,11 @@ class Admin::UsersController < Admin::BaseController
                            .where.not(hospital_id: new_hospital_ids)
                            .destroy_all
 
-      # current_role_idを適切に設定（バリデーションとコールバックをスキップ）
-      assigned_role_ids = @user.user_hospital_roles.pluck(:role_id).uniq
-      if assigned_role_ids.any?
-        @user.update_column(:current_role_id, assigned_role_ids.first)
+      # current_hospital_role_idを適切に設定（バリデーションとコールバックをスキップ）
+      # 最初のuser_hospital_roleのIDを設定
+      first_user_hospital_role = @user.user_hospital_roles.first
+      if first_user_hospital_role
+        @user.update_column(:current_hospital_role_id, first_user_hospital_role.id)
       end
 
       redirect_to admin_user_path(@user), notice: 'ユーザー情報を更新しました。'
@@ -400,6 +405,8 @@ class Admin::UsersController < Admin::BaseController
   end
 
   def destroy
+    # 外部キー制約違反を防ぐため、current_hospital_role_idをnilに設定してから削除
+    @user.update_column(:current_hospital_role_id, nil)
     @user.destroy
     redirect_to admin_users_path, notice: "#{@user.name} を削除しました。"
   end

@@ -27,8 +27,8 @@
 
       <dt class="col-sm-3">現在の役割</dt>
       <dd class="col-sm-9">
-        <% if @user.current_role %>
-          <span class="badge bg-primary"><%= @user.current_role.name %></span>
+        <% if @user.current_hospital_role %>
+          <span class="badge bg-primary"><%= @user.current_hospital_role.role.name %></span>
         <% else %>
           <span class="text-muted">未設定</span>
         <% end %>

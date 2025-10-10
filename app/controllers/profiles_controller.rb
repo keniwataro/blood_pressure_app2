@@ -11,10 +11,10 @@ class ProfilesController < ApplicationController
 
   def confirm
     @user = current_user
-    # current_role_idを保持してから属性を更新
-    original_current_role_id = @user.current_role_id
+    # current_hospital_role_idを保持してから属性を更新
+    original_current_hospital_role_id = @user.current_hospital_role_id
     @user.assign_attributes(user_params.except(:current_password, :password, :password_confirmation))
-    @user.current_role_id = original_current_role_id
+    @user.current_hospital_role_id = original_current_hospital_role_id
     
     @has_password_change = user_params[:password].present?
     

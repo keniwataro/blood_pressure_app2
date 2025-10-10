@@ -40,8 +40,8 @@
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <%= current_user.name || current_user.email %>
-                  <% if current_user.current_role.present? %>
-                    <span class="badge bg-danger ms-1"><%= current_user.current_role.name %></span>
+                  <% if current_user.current_hospital_role.present? %>
+                    <span class="badge bg-danger ms-1"><%= current_user.current_hospital_role.role.name %></span>
                   <% end %>
                 </a>
                 <ul class="dropdown-menu">

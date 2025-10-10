@@ -14,9 +14,9 @@
           <div class="row g-3">
             <% @available_roles.each do |role| %>
               <div class="col-12 col-md-6">
-                <%= button_to switch_role_path(role_id: role.id), 
-                              method: :post, 
-                              class: "btn btn-lg w-100 h-100 py-4 #{role.id == current_user.current_role_id ? 'btn-primary' : 'btn-outline-primary'}" do %>
+                <%= button_to switch_role_path(role_id: role.id),
+                              method: :post,
+                              class: "btn btn-lg w-100 h-100 py-4 #{current_user.current_hospital_role&.role_id == role.id ? 'btn-primary' : 'btn-outline-primary'}" do %>
                   <div class="d-flex flex-column align-items-center">
                     <% if role.is_medical_staff %>
                       <i class="bi bi-hospital fs-1 mb-3"></i>
@@ -27,7 +27,7 @@
                       <h5 class="mb-2"><%= role.name %></h5>
                       <p class="mb-0 small">患者として利用</p>
                     <% end %>
-                    <% if role.id == current_user.current_role_id %>
+                    <% if current_user.current_hospital_role&.role_id == role.id %>
                       <span class="badge bg-success mt-2">現在の役割</span>
                     <% end %>
                   </div>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="mt-4 text-center">
-      <% if current_user.current_role.present? %>
+      <% if current_user.current_hospital_role.present? %>
         <% if current_user.current_role_medical_staff? %>
           <%= link_to "医療従事者画面へ", medical_staff_root_path, class: "btn btn-success" %>
         <% else %>
