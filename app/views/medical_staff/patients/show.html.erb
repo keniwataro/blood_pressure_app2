@@ -254,6 +254,7 @@
                   <th>最低血圧</th>
                   <th>脈拍</th>
                   <th>分類</th>
+                  <th>メモ</th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -281,6 +282,9 @@
                                                 end %>">
                         <%= record.blood_pressure_category %>
                       </span>
+                    </td>
+                    <td>
+                      <%= record.memo.presence || '-' %>
                     </td>
                     <td>
                       <%= link_to "詳細", medical_staff_patient_blood_pressure_record_path(@patient, record), class: "btn btn-sm btn-info" %>

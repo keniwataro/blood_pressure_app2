@@ -60,6 +60,7 @@ Rails.application.routes.draw do
   resources :blood_pressure_records do
     collection do
       post 'confirm_new'
+      post 'import'
     end
     member do
       post 'confirm_edit'

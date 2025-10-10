@@ -1,0 +1,143 @@
+# 血圧記録CSVインポート機能の実装
+
+## 実装内容
+
+### 1. ルーティングの追加
+**ファイル**: `config/routes.rb`
+
+血圧記録のcollectionにimportアクションを追加:
+```ruby
+resources :blood_pressure_records do
+  collection do
+    post 'confirm_new'
+    post 'import'  # 追加
+  end
+  member do
+    post 'confirm_edit'
+  end
+end
+```
+
+### 2. コントローラーにインポート処理を追加
+**ファイル**: `app/controllers/blood_pressure_records_controller.rb`
+
+`import`アクションと処理メソッドを追加:
+```ruby
+def import
+  if params[:file].blank?
+    redirect_to blood_pressure_records_path, alert: 'CSVファイルを選択してください。'
+    return
+  end
+
+  begin
+    result = import_csv(params[:file])
+    redirect_to blood_pressure_records_path, notice: "#{result[:created]}件の新規登録、#{result[:updated]}件の更新が完了しました。"
+  rescue => e
+    redirect_to blood_pressure_records_path, alert: "インポートに失敗しました: #{e.message}"
+  end
+end
+
+private
+
+def import_csv(file)
+  require 'csv'
+  
+  created_count = 0
+  updated_count = 0
+  errors = []
+  
+  # トランザクション内で処理（1つでもエラーがあればロールバック）
+  ActiveRecord::Base.transaction do
+    csv_text = file.read.force_encoding('UTF-8')
+    csv_text = csv_text.sub("\uFEFF", '') # BOM削除
+    
+    CSV.parse(csv_text, headers: true) do |row|
+      next if row['測定日時'].blank?
+      
+      # 測定日時をパース
+      measured_at = Time.zone.parse(row['測定日時'])
+      
+      # 同じ測定日時のレコードを検索
+      record = current_user.blood_pressure_records.find_or_initialize_by(measured_at: measured_at)
+      
+      # 属性を設定
+      record.assign_attributes(
+        systolic_pressure: row['最高血圧(mmHg)'],
+        diastolic_pressure: row['最低血圧(mmHg)'],
+        pulse_rate: row['脈拍(bpm)'],
+        memo: row['メモ']
+      )
+      
+      # バリデーション
+      unless record.valid?
+        error_msg = "#{measured_at.strftime('%Y/%m/%d %H:%M')}: #{record.errors.full_messages.join(', ')}"
+        errors << error_msg
+        raise ActiveRecord::Rollback, error_msg
+      end
+      
+      if record.new_record?
+        record.save!
+        created_count += 1
+      else
+        record.save!
+        updated_count += 1
+      end
+    end
+    
+    raise StandardError, errors.join("\n") if errors.any?
+  end
+  
+  { created: created_count, updated: updated_count }
+end
+```
+
+### 3. ビューにモーダルとボタンを追加
+**ファイル**: `app/views/blood_pressure_records/index.html.erb`
+
+CSV取り込みボタンを追加（5行目の後）:
+```erb
+<%= button_tag "CSV取り込み", type: "button", class: "btn btn-info me-2", 
+    data: { bs_toggle: "modal", bs_target: "#importModal" } %>
+```
+
+ページ末尾にモーダルを追加:
+```erb
+<!-- CSVインポートモーダル -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importModalLabel">CSVファイル取り込み</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+      </div>
+      <%= form_with url: import_blood_pressure_records_path, multipart: true, local: true do |f| %>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">CSVファイルを選択</label>
+            <%= f.file_field :file, accept: ".csv", class: "form-control", id: "csvFile", required: true %>
+          </div>
+          <div class="alert alert-info">
+            <strong>CSVフォーマット:</strong><br>
+            測定日時,最高血圧(mmHg),最低血圧(mmHg),脈拍(bpm),血圧分類,メモ<br>
+            <small class="text-muted">※血圧分類は自動計算されるため、列は無視されます</small><br>
+            <small class="text-muted">※測定日時が同じ記録は上書きされます</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+          <%= f.submit "取り込み", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+```
+
+## 実装のポイント
+
+- CSVフォーマット: 出力したCSVと同じ（ヘッダー行含む）
+- 重複処理: 測定日時で検索し、存在すれば上書き更新
+- エラー処理: トランザクション内で処理し、1件でもエラーがあれば全件ロールバック
+- UI: Bootstrapのモーダルウィンドウで実装
+- 血圧分類: CSVの値は無視し、モデルで自動計算
+- 文字コード: UTF-8 BOM対応

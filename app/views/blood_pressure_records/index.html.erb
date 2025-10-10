@@ -1,6 +1,13 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1 class="h2">血圧記録</h1>
-  <%= link_to "新しい記録を追加", new_blood_pressure_record_path, class: "btn btn-primary" %>
+  <div>
+    <%= link_to "CSV出力", blood_pressure_records_path(format: :csv),
+        class: "btn btn-success me-2" %>
+    <%= button_tag "CSV取り込み", type: "button", class: "btn btn-info me-2",
+        data: { bs_toggle: "modal", bs_target: "#importModal" } %>
+    <%= link_to "新しい記録を追加", new_blood_pressure_record_path,
+        class: "btn btn-primary" %>
+  </div>
 </div>
 
 <!-- 血圧記録テーブル -->
@@ -23,6 +30,7 @@
               <th>最低血圧</th>
               <th>脈拍</th>
               <th>分類</th>
+              <th>メモ</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -52,6 +60,9 @@
                   </span>
                 </td>
                 <td>
+                  <%= record.memo.presence || '-' %>
+                </td>
+                <td>
                   <%= link_to "詳細", record, class: "btn btn-sm btn-info" %>
                   <%= link_to "編集", edit_blood_pressure_record_path(record), class: "btn btn-sm btn-warning" %>
                 </td>
@@ -72,5 +83,35 @@
         <%= link_to "初回記録を追加", new_blood_pressure_record_path, class: "btn btn-primary" %>
       </div>
     <% end %>
+  </div>
+</div>
+
+<!-- CSVインポートモーダル -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importModalLabel">CSVファイル取り込み</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+      </div>
+      <%= form_with url: import_blood_pressure_records_path, multipart: true, local: true do |f| %>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">CSVファイルを選択</label>
+            <%= f.file_field :file, accept: ".csv", class: "form-control", id: "csvFile", required: true %>
+          </div>
+          <div class="alert alert-info">
+            <strong>CSVフォーマット:</strong><br>
+            測定日時,最高血圧(mmHg),最低血圧(mmHg),脈拍(bpm),血圧分類,メモ<br>
+            <small class="text-muted">※血圧分類は自動計算されるため、列は無視されます</small><br>
+            <small class="text-muted">※測定日時が同じ記録は上書きされます</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+          <%= f.submit "取り込み", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>

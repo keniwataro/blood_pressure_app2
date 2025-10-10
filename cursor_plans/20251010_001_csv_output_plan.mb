@@ -1,0 +1,75 @@
+# 血圧記録CSV出力機能の実装
+
+## 実装内容
+
+### 1. コントローラーの拡張
+
+**ファイル**: `app/controllers/blood_pressure_records_controller.rb`
+
+`index`アクションにCSV出力対応を追加:
+
+```ruby
+def index
+  @blood_pressure_records = current_user.blood_pressure_records.recent
+  @recent_records = @blood_pressure_records.limit(10)
+  
+  respond_to do |format|
+    format.html
+    format.csv { send_csv_data }
+  end
+end
+
+private
+
+def send_csv_data
+  csv_data = generate_csv
+  send_data csv_data, 
+    filename: "blood_pressure_records_#{Time.current.strftime('%Y%m%d_%H%M%S')}.csv",
+    type: 'text/csv; charset=utf-8'
+end
+
+def generate_csv
+  require 'csv'
+  
+  CSV.generate(headers: true, force_quotes: true) do |csv|
+    csv << ['測定日時', '最高血圧(mmHg)', '最低血圧(mmHg)', '脈拍(bpm)', '血圧分類', 'メモ']
+    
+    @blood_pressure_records.each do |record|
+      csv << [
+        record.measured_at.strftime('%Y/%m/%d %H:%M'),
+        record.systolic_pressure,
+        record.diastolic_pressure,
+        record.pulse_rate,
+        record.blood_pressure_category,
+        record.memo
+      ]
+    end
+  end
+end
+```
+
+### 2. ビューの更新
+
+**ファイル**: `app/views/blood_pressure_records/index.html.erb`
+
+ヘッダー部分にCSV出力ボタンを追加（3行目の後に追加）:
+
+```erb
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2">血圧記録</h1>
+  <div>
+    <%= link_to "CSV出力", blood_pressure_records_path(format: :csv), 
+        class: "btn btn-success me-2" %>
+    <%= link_to "新しい記録を追加", new_blood_pressure_record_path, 
+        class: "btn btn-primary" %>
+  </div>
+</div>
+```
+
+## 実装のポイント
+
+- 全件出力: `@blood_pressure_records`（recent scopeで降順ソート済み）を使用
+- CSV項目: 測定日時、最高血圧、最低血圧、脈拍、血圧分類、メモの全項目
+- ファイル名: `blood_pressure_records_YYYYMMDD_HHMMSS.csv`形式
+- 文字コード: UTF-8（Excelで開く際はBOM付きが望ましい場合は対応可能）
+- 日時フォーマット: `YYYY/MM/DD HH:MM`形式
