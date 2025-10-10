@@ -1,3 +1,9 @@
-<li class="page-item">
-  <%= link_to_unless current_page.last?, "最後 »", url, class: "page-link", remote: remote %>
-</li>
+<% if current_page.last? %>
+  <li class="page-item disabled">
+    <span class="page-link">最後 »</span>
+  </li>
+<% else %>
+  <li class="page-item">
+    <%= link_to "最後 »", url, class: "page-link", remote: remote %>
+  </li>
+<% end %>

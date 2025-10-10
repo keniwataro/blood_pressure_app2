@@ -1,19 +1,28 @@
 <%= paginator.render do %>
   <nav class="pagination-wrapper">
-    <ul class="pagination pagination-custom">
-      <%= first_page_tag unless current_page.first? %>
-      <%= prev_page_tag unless current_page.first? %>
+    <div class="pagination-custom">
+      <!-- ナビゲーションボタン（SPで1段目） -->
+      <div class="pagination-nav">
+        <%= first_page_tag %>
+        <%= prev_page_tag %>
+      </div>
 
-      <% each_page do |page| %>
-        <% if page.display_tag? %>
-          <%= page_tag page %>
-        <% elsif !page.was_truncated? %>
-          <%= gap_tag %>
+      <!-- ページ番号（SPで2段目） -->
+      <div class="pagination-pages">
+        <% each_page do |page| %>
+          <% if page.display_tag? %>
+            <%= page_tag page %>
+          <% elsif !page.was_truncated? %>
+            <%= gap_tag %>
+          <% end %>
         <% end %>
-      <% end %>
+      </div>
 
-      <%= next_page_tag unless current_page.last? %>
-      <%= last_page_tag unless current_page.last? %>
-    </ul>
+      <!-- 次へ、最後（SPで1段目の右側） -->
+      <div class="pagination-nav">
+        <%= next_page_tag %>
+        <%= last_page_tag %>
+      </div>
+    </div>
   </nav>
 <% end %>

@@ -1,3 +1,9 @@
-<li class="page-item">
-  <%= link_to_unless current_page.first?, "« 最初", url, class: "page-link", remote: remote %>
-</li>
+<% if current_page.first? %>
+  <li class="page-item disabled">
+    <span class="page-link">« 最初</span>
+  </li>
+<% else %>
+  <li class="page-item">
+    <%= link_to "« 最初", url, class: "page-link", remote: remote %>
+  </li>
+<% end %>

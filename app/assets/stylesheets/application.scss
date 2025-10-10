@@ -702,57 +702,102 @@ footer {
 .pagination-custom {
   display: flex;
   justify-content: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
   margin: 1rem 0;
 
-  li {
-    list-style: none;
+  .pagination-nav {
+    display: flex;
+    gap: 6px;
 
-    a, span {
-      color: var(--primary-color);
-      border: 2px solid var(--primary-color);
-      border-radius: 8px;
-      padding: 10px 16px;
-      text-decoration: none;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      display: inline-block;
-      min-width: 44px;
-      text-align: center;
+    li {
+      list-style: none;
 
-      &:hover {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+      a, span {
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 10px 16px;
         text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        display: inline-block;
+        min-width: 44px;
+        text-align: center;
+
+        &:hover {
+          background: var(--primary-color);
+          color: white;
+          border-color: var(--primary-color);
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+          text-decoration: none;
+        }
+      }
+
+      &.disabled span,
+      &.disabled a {
+        color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        background: rgba(255, 255, 255, 0.6);
+        cursor: not-allowed;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.6);
+          color: var(--secondary-color);
+          transform: none;
+          box-shadow: none;
+        }
       }
     }
+  }
 
-    &.active span {
-      background: var(--gradient-primary);
-      border-color: var(--primary-color);
-      color: white;
-      font-weight: 600;
-      box-shadow: var(--shadow-sm);
-    }
+  .pagination-pages {
+    display: flex;
+    gap: 6px;
 
-    &.disabled span,
-    &.disabled a {
-      color: var(--secondary-color);
-      border-color: var(--secondary-color);
-      background: rgba(255, 255, 255, 0.6);
-      cursor: not-allowed;
+    li {
+      list-style: none;
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.6);
+      a, span {
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 10px 16px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        display: inline-block;
+        min-width: 44px;
+        text-align: center;
+
+        &:hover {
+          background: var(--primary-color);
+          color: white;
+          border-color: var(--primary-color);
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+          text-decoration: none;
+        }
+      }
+
+      &.active span {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+      }
+
+      &.disabled span {
         color: var(--secondary-color);
-        transform: none;
-        box-shadow: none;
+        border-color: var(--secondary-color);
+        background: rgba(255, 255, 255, 0.6);
+        cursor: not-allowed;
       }
     }
   }
@@ -766,12 +811,29 @@ footer {
 // レスポンシブ対応
 @media (max-width: 576px) {
   .pagination-custom {
-    gap: 2px;
+    flex-direction: column;
+    gap: 16px;
 
-    li a, li span {
-      padding: 8px 12px;
-      font-size: 0.8rem;
-      min-width: 36px;
+    .pagination-nav {
+      justify-content: center;
+      gap: 8px;
+
+      li a, li span {
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        min-width: 40px;
+      }
+    }
+
+    .pagination-pages {
+      justify-content: center;
+      gap: 6px;
+
+      li a, li span {
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        min-width: 40px;
+      }
     }
   }
 }
