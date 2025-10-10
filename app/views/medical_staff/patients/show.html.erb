@@ -239,12 +239,19 @@
     </div>
 
     <!-- 血圧記録一覧 -->
-    <div class="card">
+    <div id="blood-pressure-records" class="card">
       <div class="card-header">
-        <h5 class="mb-0">血圧記録（最新20件）</h5>
+        <h5 class="mb-0">血圧記録（全<%= @blood_pressure_records.total_count %>件）</h5>
       </div>
       <div class="card-body">
         <% if @blood_pressure_records.any? %>
+          <!-- 上部ページネーション -->
+          <div class="d-flex justify-content-center mb-3">
+            <%= paginate @blood_pressure_records,
+                param_name: :page,
+                params: { anchor: 'blood-pressure-records' },
+                theme: 'custom' %>
+          </div>
           <div class="table-responsive">
             <table class="table table-hover">
               <thead>
@@ -294,11 +301,13 @@
               </tbody>
             </table>
           </div>
-          <% if @patient.blood_pressure_records.count > 20 %>
-            <div class="text-center mt-3">
-              <p class="text-muted">最新の20件を表示しています。</p>
-            </div>
-          <% end %>
+          <!-- 下部ページネーション -->
+          <div class="d-flex justify-content-center mt-3">
+            <%= paginate @blood_pressure_records,
+                param_name: :page,
+                params: { anchor: 'blood-pressure-records' },
+                theme: 'custom' %>
+          </div>
         <% else %>
           <div class="text-center py-5">
             <p class="text-muted">まだ血圧記録がありません。</p>

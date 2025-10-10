@@ -697,3 +697,82 @@ footer {
     font-weight: bold;
   }
 }
+
+// カスタムページネーションスタイル
+.pagination-custom {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+
+  li {
+    list-style: none;
+
+    a, span {
+      color: var(--primary-color);
+      border: 2px solid var(--primary-color);
+      border-radius: 8px;
+      padding: 10px 16px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: inline-block;
+      min-width: 44px;
+      text-align: center;
+
+      &:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        text-decoration: none;
+      }
+    }
+
+    &.active span {
+      background: var(--gradient-primary);
+      border-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    &.disabled span,
+    &.disabled a {
+      color: var(--secondary-color);
+      border-color: var(--secondary-color);
+      background: rgba(255, 255, 255, 0.6);
+      cursor: not-allowed;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.6);
+        color: var(--secondary-color);
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+
+  // 日本語テキストのスタイリング
+  a, span {
+    font-size: 0.9rem;
+  }
+}
+
+// レスポンシブ対応
+@media (max-width: 576px) {
+  .pagination-custom {
+    gap: 2px;
+
+    li a, li span {
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      min-width: 36px;
+    }
+  }
+}
+

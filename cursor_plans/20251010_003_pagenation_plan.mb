@@ -1,0 +1,98 @@
+# 患者詳細ページネーション実装
+
+## 実装内容
+
+### 1. コントローラーの修正
+**ファイル**: `app/controllers/medical_staff/patients_controller.rb`
+
+35行目の`show`アクションを修正し、20件から10件ごとのページネーションに変更:
+```ruby
+def show
+  @blood_pressure_records = @patient.blood_pressure_records.recent.page(params[:page]).per(10)
+  @assigned_staff = @patient.assigned_staff_at(@hospital)
+  # ... 以下省略
+end
+```
+
+### 2. ビューの修正
+**ファイル**: `app/views/medical_staff/patients/show.html.erb`
+
+#### 2-1. 血圧記録セクションにIDを追加（242行目）
+```erb
+<div id="blood-pressure-records" class="card">
+```
+
+#### 2-2. ヘッダーを修正（244行目）
+```erb
+<h5 class="mb-0">血圧記録（全<%= @blood_pressure_records.total_count %>件）</h5>
+```
+
+#### 2-3. 上部ページネーション追加（246行目の後）
+```erb
+<% if @blood_pressure_records.any? %>
+  <!-- 上部ページネーション -->
+  <div class="d-flex justify-content-center mb-3">
+    <%= paginate @blood_pressure_records, 
+        param_name: :page,
+        params: { anchor: 'blood-pressure-records' },
+        theme: 'custom' %>
+  </div>
+
+  <div class="table-responsive">
+```
+
+#### 2-4. 下部ページネーション追加（296行目の後、297-301行目を置き換え）
+```erb
+  </div>
+  
+  <!-- 下部ページネーション -->
+  <div class="d-flex justify-content-center mt-3">
+    <%= paginate @blood_pressure_records, 
+        param_name: :page,
+        params: { anchor: 'blood-pressure-records' },
+        theme: 'custom' %>
+  </div>
+<% else %>
+```
+
+### 3. カスタムページネーションビューの作成
+
+Kaminariのビューテンプレートを生成してカスタマイズ:
+
+**ファイル**: `app/views/kaminari/_paginator.html.erb`（新規作成）
+```erb
+<nav class="pagination-wrapper">
+  <ul class="pagination pagination-custom">
+    <%= first_page_tag unless current_page.first? %>
+    <%= prev_page_tag unless current_page.first? %>
+    
+    <% each_page do |page| %>
+      <% if page.left_outer? || page.right_outer? || page.inside_window? %>
+        <%= page_tag page %>
+      <% elsif !page.was_truncated? %>
+        <%= gap_tag %>
+      <% end %>
+    <% end %>
+    
+    <%= next_page_tag unless current_page.last? %>
+    <%= last_page_tag unless current_page.last? %>
+  </ul>
+</nav>
+```
+
+その他必要なパーシャル（`_page.html.erb`, `_first_page.html.erb`, `_prev_page.html.erb`, `_next_page.html.erb`, `_last_page.html.erb`, `_gap.html.erb`）も作成。
+
+### 4. カスタムCSSの追加
+**ファイル**: `app/assets/stylesheets/application.scss`
+
+オシャレなページネーションスタイルを追加:
+```scss
+.pagination-custom {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  
+  li {
+    list-style: none;

@@ -32,7 +32,7 @@ class MedicalStaff::PatientsController < ApplicationController
   end
 
   def show
-    @blood_pressure_records = @patient.blood_pressure_records.recent.limit(20)
+    @blood_pressure_records = @patient.blood_pressure_records.recent.page(params[:page]).per(10)
     @assigned_staff = @patient.assigned_staff_at(@hospital)
     
     # グラフ表示用のパラメータ
