@@ -101,5 +101,6 @@ Rails.application.configure do
   # Letter Opener設定
   config.action_mailer.delivery_method = :letter_opener_web
   config.action_mailer.perform_deliveries = true
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
 end

@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  # Letter Opener Web（開発環境でのメール確認用）
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
   # Deviseのルート設定（registrationsを無効化）
   devise_for :users, skip: [:registrations]
   
