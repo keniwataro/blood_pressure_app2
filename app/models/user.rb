@@ -103,7 +103,7 @@ class User < ApplicationRecord
     user_hospital_roles
       .joins(:role)
       .where(hospital_id: hospital.id, roles: { is_medical_staff: true })
-      .permission_level_administrator
+      .where(permission_level: :administrator)
       .exists?
   end
   

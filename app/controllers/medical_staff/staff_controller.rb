@@ -361,7 +361,12 @@ class MedicalStaff::StaffController < ApplicationController
   end
 
   def set_hospital
-    @hospital = current_user.hospitals_as_staff.first
+    if current_user.current_hospital_role&.role&.is_medical_staff?
+      @hospital = current_user.current_hospital_role.hospital
+    else
+      @hospital = current_user.hospitals_as_staff.first
+    end
+
     unless @hospital
       redirect_to root_path, alert: '病院が登録されていません。'
     end

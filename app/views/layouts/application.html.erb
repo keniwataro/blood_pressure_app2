@@ -64,6 +64,9 @@
             <ul class="navbar-nav">
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <% if current_user.current_hospital_role&.role&.is_hospital_role %>
+                    <span class="text-muted small me-1"><%= current_user.current_hospital_role.hospital.name %>:</span>
+                  <% end %>
                   <%= current_user.name || current_user.email %>
                   <% if current_user.system_admin? %>
                     <span class="badge bg-danger ms-1"><%= current_user.current_hospital_role.role.name %></span>

@@ -4,7 +4,13 @@ class MedicalStaff::DashboardController < ApplicationController
 
   def index
     @hospitals = current_user.hospitals_as_staff
-    @hospital = @hospitals.first # 最初の病院を選択（複数病院対応は後で）
+
+    # 現在の役割に対応する病院を設定
+    if current_user.current_hospital_role&.role&.is_medical_staff?
+      @hospital = current_user.current_hospital_role.hospital
+    else
+      @hospital = @hospitals.first
+    end
   end
 
   private
