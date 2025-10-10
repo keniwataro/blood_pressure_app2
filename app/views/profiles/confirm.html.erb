@@ -11,11 +11,10 @@
           <!-- 入力値を hidden フィールドで保持 -->
           <%= f.hidden_field :name %>
           <%= f.hidden_field :email %>
-          <% if @has_password_change %>
-            <%= f.hidden_field :current_password %>
-            <%= f.hidden_field :password %>
-            <%= f.hidden_field :password_confirmation %>
-          <% end %>
+          <%= hidden_field_tag :skip_password_update, params[:skip_password_update] %>
+          <%= hidden_field_tag 'user[current_password]', @current_password if @has_password_change %>
+          <%= hidden_field_tag 'user[password]', @password if @has_password_change %>
+          <%= hidden_field_tag 'user[password_confirmation]', @password_confirmation if @has_password_change %>
 
           <div class="row">
             <div class="col-md-6">

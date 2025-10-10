@@ -1,11 +1,14 @@
-<div class="row justify-content-center">
+<div class="row justify-content-center" data-turbo="false">
   <div class="col-md-8">
     <div class="card">
       <div class="card-header">
         <h4 class="mb-0">プロフィール編集</h4>
       </div>
       <div class="card-body">
-        <%= form_with model: @user, url: confirm_profile_path, data: { turbo: false } do |f| %>
+        <%= form_with model: @user, url: confirm_profile_path, method: :post, data: { turbo: false } do |f| %>
+          <%= f.hidden_field :current_password %>
+          <%= f.hidden_field :password %>
+          <%= f.hidden_field :password_confirmation %>
           <% if @user.errors.any? %>
             <div class="alert alert-danger">
               <h6>エラーが発生しました:</h6>
@@ -20,7 +23,7 @@
           <div class="row">
             <div class="col-md-6">
               <h5 class="mb-3">基本情報</h5>
-              
+
               <div class="mb-3">
                 <label class="form-label"><strong>ユーザーID</strong></label>
                 <p class="form-control-plaintext text-primary fw-bold"><%= @user.user_id %></p>
@@ -40,21 +43,32 @@
 
             <div class="col-md-6">
               <h5 class="mb-3">パスワード変更</h5>
-              <p class="text-muted small">パスワードを変更する場合のみ入力してください</p>
 
               <div class="mb-3">
-                <%= f.label :current_password, "現在のパスワード", class: "form-label" %>
-                <%= f.password_field :current_password, class: "form-control", autocomplete: "current-password" %>
-                <div class="form-text">パスワードを変更する場合は必須です</div>
+                <div class="form-check mb-2">
+                  <%= check_box_tag 'skip_password_update', '1', false, id: 'skip_password_update', class: 'form-check-input' %>
+                  <%= label_tag 'skip_password_update', 'パスワード変更なし', class: 'form-check-label' %>
+                  <small class="text-muted d-block">チェックを入れるとパスワードは変更されません</small>
+                </div>
               </div>
 
-              <div class="mb-3">
-                <%= f.label :password, "新しいパスワード", class: "form-label" %>
-                <%= f.password_field :password, class: "form-control", autocomplete: "new-password" %>
-                <div class="form-text">6文字以上で入力してください</div>
+              <div class="mb-3" id="password_fields" style="display: block;">
+                <p class="text-muted small">パスワードを変更する場合のみ入力してください</p>
+
+                <div class="mb-3">
+                  <%= f.label :current_password, "現在のパスワード", class: "form-label" %>
+                  <%= f.password_field :current_password, class: "form-control", autocomplete: "current-password" %>
+                  <div class="form-text">パスワードを変更する場合は必須です</div>
+                </div>
+
+                <div class="mb-3">
+                  <%= f.label :password, "新しいパスワード", class: "form-label" %>
+                  <%= f.password_field :password, class: "form-control", autocomplete: "new-password" %>
+                  <div class="form-text">6文字以上で入力してください</div>
+                </div>
               </div>
 
-              <div class="mb-3">
+              <div class="mb-3" id="password_confirmation_fields" style="display: block;">
                 <%= f.label :password_confirmation, "新しいパスワード（確認）", class: "form-label" %>
                 <%= f.password_field :password_confirmation, class: "form-control", autocomplete: "new-password" %>
               </div>
@@ -72,3 +86,65 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Turbo対応のためturbo:loadイベントを使用
+  document.addEventListener('turbo:load', function() {
+    setTimeout(function() {
+      // パスワード変更チェックボックスの処理
+      const skipPasswordCheckbox = document.getElementById('skip_password_update');
+      const passwordFields = document.getElementById('password_fields');
+      const passwordConfirmationFields = document.getElementById('password_confirmation_fields');
+
+      if (!skipPasswordCheckbox || !passwordFields || !passwordConfirmationFields) {
+        return;
+      }
+
+      function togglePasswordFields() {
+        if (skipPasswordCheckbox.checked) {
+          passwordFields.style.display = 'none';
+          passwordConfirmationFields.style.display = 'none';
+        } else {
+          passwordFields.style.display = 'block';
+          passwordConfirmationFields.style.display = 'block';
+        }
+      }
+
+      // 初期状態の設定
+      togglePasswordFields();
+
+      // チェックボックスの変更を監視
+      skipPasswordCheckbox.addEventListener('change', togglePasswordFields);
+    }, 100);
+  });
+
+  // 念のため、従来のイベントも設定
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      // パスワード変更チェックボックスの処理
+      const skipPasswordCheckbox = document.getElementById('skip_password_update');
+      const passwordFields = document.getElementById('password_fields');
+      const passwordConfirmationFields = document.getElementById('password_confirmation_fields');
+
+      if (!skipPasswordCheckbox || !passwordFields || !passwordConfirmationFields) {
+        return;
+      }
+
+      function togglePasswordFields() {
+        if (skipPasswordCheckbox.checked) {
+          passwordFields.style.display = 'none';
+          passwordConfirmationFields.style.display = 'none';
+        } else {
+          passwordFields.style.display = 'block';
+          passwordConfirmationFields.style.display = 'block';
+        }
+      }
+
+      // 初期状態の設定
+      togglePasswordFields();
+
+      // チェックボックスの変更を監視
+      skipPasswordCheckbox.addEventListener('change', togglePasswordFields);
+    }, 100);
+  });
+</script>
