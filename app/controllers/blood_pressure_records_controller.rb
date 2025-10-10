@@ -3,8 +3,22 @@ class BloodPressureRecordsController < ApplicationController
 
   def index
     @blood_pressure_records = current_user.blood_pressure_records.recent
-    @recent_records = @blood_pressure_records.limit(10)
-    
+
+    # ページネーション設定
+    @per_page = 10
+    @current_page = (params[:page] || 1).to_i
+    @current_page = 1 if @current_page < 1
+
+    # 総件数を取得
+    @total_count = @blood_pressure_records.count
+
+    # ページネーション用のオフセットとリミットを計算
+    offset = (@current_page - 1) * @per_page
+    @blood_pressure_records_paginated = @blood_pressure_records.offset(offset).limit(@per_page)
+
+    # 総ページ数を計算
+    @total_pages = (@total_count.to_f / @per_page).ceil
+
     respond_to do |format|
       format.html
       format.csv { send_csv_data }

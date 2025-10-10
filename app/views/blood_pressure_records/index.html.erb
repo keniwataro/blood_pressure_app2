@@ -13,11 +13,82 @@
 <!-- 血圧記録テーブル -->
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">最近の記録</h5>
+    <h5 class="mb-0">血圧記録</h5>
     <%= link_to "グラフ表示", charts_path, class: "btn btn-success btn-sm" %>
   </div>
   <div class="card-body">
     <% if @blood_pressure_records.any? %>
+      <!-- 上部のページネーション -->
+      <% if @total_pages > 1 %>
+        <nav aria-label="ページネーション" class="mb-4">
+          <ul class="pagination justify-content-center">
+            <!-- 前へリンク -->
+            <% if @current_page > 1 %>
+              <li class="page-item">
+                <%= link_to "前へ", blood_pressure_records_path(page: @current_page - 1), class: "page-link" %>
+              </li>
+            <% else %>
+              <li class="page-item disabled">
+                <span class="page-link">前へ</span>
+              </li>
+            <% end %>
+
+            <!-- ページ番号リンク -->
+            <% start_page = [@current_page - 2, 1].max %>
+            <% end_page = [@current_page + 2, @total_pages].min %>
+
+            <!-- 最初のページへのリンク（省略記号が必要な場合） -->
+            <% if start_page > 1 %>
+              <li class="page-item">
+                <%= link_to "1", blood_pressure_records_path(page: 1), class: "page-link" %>
+              </li>
+              <% if start_page > 2 %>
+                <li class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+              <% end %>
+            <% end %>
+
+            <!-- 現在のページ周辺のページ番号 -->
+            <% (start_page..end_page).each do |page| %>
+              <li class="page-item <%= 'active' if page == @current_page %>">
+                <%= link_to page, blood_pressure_records_path(page: page), class: "page-link" %>
+              </li>
+            <% end %>
+
+            <!-- 最後のページへのリンク（省略記号が必要な場合） -->
+            <% if end_page < @total_pages %>
+              <% if end_page < @total_pages - 1 %>
+                <li class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+              <% end %>
+              <li class="page-item">
+                <%= link_to @total_pages, blood_pressure_records_path(page: @total_pages), class: "page-link" %>
+              </li>
+            <% end %>
+
+            <!-- 次へリンク -->
+            <% if @current_page < @total_pages %>
+              <li class="page-item">
+                <%= link_to "次へ", blood_pressure_records_path(page: @current_page + 1), class: "page-link" %>
+              </li>
+            <% else %>
+              <li class="page-item disabled">
+                <span class="page-link">次へ</span>
+              </li>
+            <% end %>
+          </ul>
+        </nav>
+
+        <!-- ページ情報表示 -->
+        <div class="text-center mb-3">
+          <small class="text-muted">
+            <%= @total_count %>件中 <%= ((@current_page - 1) * @per_page) + 1 %>-<%= [@current_page * @per_page, @total_count].min %>件を表示
+          </small>
+        </div>
+      <% end %>
+
       <div class="d-md-none alert alert-info py-2 px-3 mb-2" style="font-size: 0.8rem;">
         <i class="bi bi-arrow-left-right"></i> 横にスクロールして全ての情報を確認できます
       </div>
@@ -35,7 +106,7 @@
             </tr>
           </thead>
           <tbody>
-            <% @recent_records.each do |record| %>
+            <% @blood_pressure_records_paginated.each do |record| %>
               <tr>
                 <td><%= record.measured_at.strftime("%Y/%m/%d %H:%M") %></td>
                 <td>
@@ -71,10 +142,75 @@
           </tbody>
         </table>
       </div>
-      
-      <% if @blood_pressure_records.count > 10 %>
-        <div class="text-center mt-3">
-          <p class="text-muted">最新の10件を表示しています。</p>
+
+      <!-- 下部のページネーション -->
+      <% if @total_pages > 1 %>
+        <nav aria-label="ページネーション" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <!-- 前へリンク -->
+            <% if @current_page > 1 %>
+              <li class="page-item">
+                <%= link_to "前へ", blood_pressure_records_path(page: @current_page - 1), class: "page-link" %>
+              </li>
+            <% else %>
+              <li class="page-item disabled">
+                <span class="page-link">前へ</span>
+              </li>
+            <% end %>
+
+            <!-- ページ番号リンク -->
+            <% start_page = [@current_page - 2, 1].max %>
+            <% end_page = [@current_page + 2, @total_pages].min %>
+
+            <!-- 最初のページへのリンク（省略記号が必要な場合） -->
+            <% if start_page > 1 %>
+              <li class="page-item">
+                <%= link_to "1", blood_pressure_records_path(page: 1), class: "page-link" %>
+              </li>
+              <% if start_page > 2 %>
+                <li class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+              <% end %>
+            <% end %>
+
+            <!-- 現在のページ周辺のページ番号 -->
+            <% (start_page..end_page).each do |page| %>
+              <li class="page-item <%= 'active' if page == @current_page %>">
+                <%= link_to page, blood_pressure_records_path(page: page), class: "page-link" %>
+              </li>
+            <% end %>
+
+            <!-- 最後のページへのリンク（省略記号が必要な場合） -->
+            <% if end_page < @total_pages %>
+              <% if end_page < @total_pages - 1 %>
+                <li class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+              <% end %>
+              <li class="page-item">
+                <%= link_to @total_pages, blood_pressure_records_path(page: @total_pages), class: "page-link" %>
+              </li>
+            <% end %>
+
+            <!-- 次へリンク -->
+            <% if @current_page < @total_pages %>
+              <li class="page-item">
+                <%= link_to "次へ", blood_pressure_records_path(page: @current_page + 1), class: "page-link" %>
+              </li>
+            <% else %>
+              <li class="page-item disabled">
+                <span class="page-link">次へ</span>
+              </li>
+            <% end %>
+          </ul>
+        </nav>
+
+        <!-- ページ情報表示 -->
+        <div class="text-center mb-3">
+          <small class="text-muted">
+            <%= @total_count %>件中 <%= ((@current_page - 1) * @per_page) + 1 %>-<%= [@current_page * @per_page, @total_count].min %>件を表示
+          </small>
         </div>
       <% end %>
     <% else %>
