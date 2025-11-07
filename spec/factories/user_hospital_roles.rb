@@ -26,8 +26,35 @@
 #
 FactoryBot.define do
   factory :user_hospital_role do
-    user { nil }
-    hospital { nil }
-    role { nil }
+    association :user
+    association :hospital
+    association :role
+    permission_level { :general }
+
+    trait :administrator do
+      permission_level { :administrator }
+    end
+
+    trait :general do
+      permission_level { :general }
+    end
+
+    # 特定の組み合わせのtrait
+    trait :patient_role do
+      association :role, :patient
+    end
+
+    trait :doctor_role do
+      association :role, :doctor
+    end
+
+    trait :nurse_role do
+      association :role, :nurse
+    end
+
+    trait :system_admin_role do
+      association :role, :system_admin
+      association :hospital, :system
+    end
   end
 end

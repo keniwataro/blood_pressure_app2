@@ -34,6 +34,9 @@ Rails.application.configure do
   # テスト環境でリクエストフォージェリ保護を無効にします。
   config.action_controller.allow_forgery_protection = false
 
+  # テスト環境でホスト認証を無効にします。
+  config.middleware.delete ActionDispatch::HostAuthorization
+
   # アップロードされたファイルを一時ディレクトリのローカルファイルシステムに保存します。
   config.active_storage.service = :test
 

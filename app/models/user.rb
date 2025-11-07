@@ -169,7 +169,7 @@ class User < ApplicationRecord
   
   # システム管理者かチェック
   def system_admin?
-    current_hospital_role&.role_id == 1 && current_hospital_role&.role&.name == 'システム管理者'
+    current_hospital_role&.role&.is_hospital_role == false
   end
   
   private
