@@ -95,5 +95,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_09_091401) do
   add_foreign_key "user_hospital_roles", "hospitals"
   add_foreign_key "user_hospital_roles", "roles"
   add_foreign_key "user_hospital_roles", "users"
-  add_foreign_key "users", "user_hospital_roles", column: "current_hospital_role_id", name: "fk_rails_current_hospital_role_id"
+  add_foreign_key "users", "user_hospital_roles", column: "current_hospital_role_id"
 end

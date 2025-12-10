@@ -23,9 +23,9 @@ class Hospital < ApplicationRecord
   validates :website, format: { with: URI::regexp(%w[http https]), message: "は有効なURLを入力してください" }, allow_blank: true
 
   # スコープ
-  scope :with_name, ->(name) { where("name ILIKE ?", "%#{name}%") }
-  scope :excluding_system_admin, -> { where.not(id: 1) }
-  scope :including_system_admin, -> { where(id: 1) }
+  scope :with_name, ->(name) { where("UPPER(name) LIKE UPPER(?)", "%#{name}%") }
+  scope :excluding_system_admin, -> { where.not(name: "システム管理病院") }
+  scope :including_system_admin, -> { where(name: "システム管理病院") }
   
   # メソッド
   def medical_staff

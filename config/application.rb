@@ -16,6 +16,7 @@ module App
     config.turbo.draw_routes = false
     config.turbo.mount_path = nil
 
+
     # .rbファイルを含まない他のlibサブディレクトリ、またはリロードまたはeager loadしないものを
     # ignoreリストに追加してください。
     # 一般的なものはtemplates、generators、またはmiddlewareなどです。

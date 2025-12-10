@@ -20,7 +20,7 @@ require 'rspec/rails'
 # 自動requireすることで起動時間を増加させる欠点があります。
 # あるいは、個別の`*_spec.rb`ファイルで、必要なサポートファイルのみを手動でrequireしてください。
 #
-# Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
 
 # 保留中のマイグレーションをチェックし、テスト実行前に適用します。
 # ActiveRecordを使用していない場合は、これらの行を削除できます。
@@ -35,7 +35,7 @@ RSpec.configure do |config|
 
   # ActiveRecordを使用していない場合、または各exampleをトランザクション内で実行したくない場合、
   # 以下の行を削除するか、trueの代わりにfalseを代入してください。
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false
 
   # ActiveRecordサポートを完全に無効にするには、この行のコメントを解除してください。
   # config.use_active_record = false
@@ -61,5 +61,33 @@ RSpec.configure do |config|
 
   # Factory Bot設定
   config.include FactoryBot::Syntax::Methods
+
+  # Devise integration helpers for request specs
+  config.include Devise::Test::IntegrationHelpers, type: :request
+
+  # Warden test mode for request and system specs
+  config.before(:suite) do
+    Warden.test_mode!
+  end
+
+  config.after(:each) do
+    Warden.test_reset!
+  end
+
+  # CSRF protectionをリクエストテストで無効化
+  config.before(:each, type: :request) do
+    ActionController::Base.allow_forgery_protection = false
+  end
+
+  # System specs
+  config.before(:each, type: :system) do
+    driven_by :rack_test
+    Capybara.default_host = "http://localhost"
+  end
+
+  config.before(:each, type: :system, js: true) do
+    driven_by :selenium_chrome_headless
+    Capybara.default_host = "http://localhost"
+  end
 
 end

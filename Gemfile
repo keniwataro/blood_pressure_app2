@@ -115,4 +115,7 @@ group :test do
 
   # テストカバレッジ測定とレポート
   gem "simplecov", require: false
+
+  # データベースクリーンアップ
+  gem "database_cleaner-active_record"
 end

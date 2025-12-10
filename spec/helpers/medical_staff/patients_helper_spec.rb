@@ -1,15 +1,41 @@
 require 'rails_helper'
 
-# Specs in this file have access to a helper object that includes
-# the MedicalStaff::PatientsHelper. For example:
-#
-# describe MedicalStaff::PatientsHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
 RSpec.describe MedicalStaff::PatientsHelper, type: :helper do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe '#patient_status_badge' do
+    let(:patient) { create(:user, :patient).reload }
+
+    it 'returns primary badge for patient' do
+      result = helper.patient_status_badge(patient)
+      expect(result).to include('badge-primary')
+      expect(result).to include('患者')
+    end
+
+    it 'returns secondary badge for non-patient' do
+      allow(patient).to receive(:current_role).and_return(nil)
+      result = helper.patient_status_badge(patient)
+      expect(result).to include('badge-secondary')
+      expect(result).to include('未設定')
+    end
+  end
+
+  describe '#patient_action_links' do
+    let(:patient) { create(:user, :patient) }
+
+    it 'returns action links' do
+      result = helper.patient_action_links(patient)
+      expect(result).to include('btn-group')
+    end
+
+    it 'includes detail link' do
+      result = helper.patient_action_links(patient)
+      expect(result).to include('詳細')
+      expect(result).to include('/medical_staff/patients/')
+    end
+
+    it 'includes edit link' do
+      result = helper.patient_action_links(patient)
+      expect(result).to include('編集')
+      expect(result).to include('/edit')
+    end
+  end
 end

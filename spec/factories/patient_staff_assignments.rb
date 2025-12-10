@@ -24,8 +24,9 @@
 #
 FactoryBot.define do
   factory :patient_staff_assignment do
-    patient { nil }
-    staff { nil }
-    hospital { nil }
+    # シンプルなFactory - 関連はテスト側で適切に設定する
+    association :patient, factory: [:user, :patient]
+    association :staff, factory: [:user, :medical_staff]
+    association :hospital
   end
 end
